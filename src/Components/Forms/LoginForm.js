@@ -2,33 +2,33 @@ import { useState } from "react";
 import { Button, Card, Container, FloatingLabel, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-function SignupForm ()
+function LoginForm ()
 {
   const [ email, setEmail ] = useState ( "" );
   const [ password, setPassword ] = useState ( "" );
-  const [ confirmPassword, setConfirmPassword ] = useState ( "" );
 
   const navigate = useNavigate ();
 
-  async function signupHandler ( event )
+  async function loginHandler ( event )
   {
     event.preventDefault ();
 
-    if ( !email || !password || !confirmPassword )
+    if ( !email || !password )
     {
       alert ( "Please complete all fields before submitting." );
       return;
     }
 
-    if ( password !== confirmPassword )
-    {
-      alert ( "Passwords do not match." );
-      return;
+    const loginData = {
+      Email: email,
+      Password: password,
     }
+
+    console.log ( "Data of the user logging in :", loginData );
 
     try
     {
-      const response = await fetch ("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAoB-HcUHT0yEXCiHtMI9ubVuSNv34MYZI",
+      const response = await fetch ( "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAoB-HcUHT0yEXCiHtMI9ubVuSNv34MYZI",
         {
           method: "POST",
           headers: {
@@ -47,10 +47,16 @@ function SignupForm ()
       if ( !response.ok )
       {
         const errorData = await response.json ();
-        throw new Error ( errorData.error.message || "Signup failed." );
+        throw new Error ( errorData.error.message || "Login failed." );
       }
 
-      alert ( "Signup Successful" );
+      alert ( "Login Successful" );
+
+      navigate ( "/landing-page" );
+
+      const data = await response.json ();
+
+      localStorage.setItem ( "Login Token", data.idToken );
     }
     
     catch ( error )
@@ -60,7 +66,6 @@ function SignupForm ()
 
     setEmail ( "" );
     setPassword ( "" );
-    setConfirmPassword ( "" );
   }
 
   return (
@@ -78,12 +83,12 @@ function SignupForm ()
           className = "p-4 text-center"
           as = "h3"
         >
-          Sign Up
+          Login
         </Card.Header>
 
-        <Card.Body>
+        <Card.Body className = "text-center">
 
-            <Form onSubmit = { signupHandler } >
+            <Form onSubmit = { loginHandler } >
 
               <FloatingLabel
                 controlId = "email"
@@ -111,29 +116,26 @@ function SignupForm ()
                 />
               </FloatingLabel>
 
-              <FloatingLabel
-                controlId = "confirmPassword"
-                label = "Confirm Password"
-                className = "mb-3"
-              >
-                <Form.Control
-                  type = "password"
-                  placeholder = "Confirm Password"
-                  value = { confirmPassword } onChange = { ( e ) => setConfirmPassword ( e.target.value ) }
-                />
-              </FloatingLabel>
-
               <Button
                 type = "submit"
                 variant = "primary"
                 className = "shadow w-100 my-3 rounded-pill p-2"
                 style = { { fontSize: "1.2rem" } }
-                aria-label="Sign Up"
+                aria-label="Login"
               > 
-                Sign Up
+                Login
               </Button>
 
             </Form>
+
+            <Button
+              className = "m-2"
+              variant = "link"
+              style = { { fontSize: "1.1rem" } } 
+              aria-label="Sign Up"
+            > 
+              Forgot Password ?
+            </Button>
 
         </Card.Body>
 
@@ -142,10 +144,10 @@ function SignupForm ()
             className = "shadow w-100 my-3 p-3"
             style = { { fontSize: "1.2rem" } } 
             variant = "success"
-            aria-label="Login"
-            onClick = { () => navigate ("/login") }
+            aria-label="Sign Up"
+            onClick = { () => navigate ( "/" ) }
           > 
-            Have an Account ? Login 
+            Don't Have an Account ? Signup 
           </Button>
         </Card.Footer>
 
@@ -155,4 +157,4 @@ function SignupForm ()
   )
 }
 
-export default SignupForm;
+export default LoginForm;
