@@ -79,7 +79,7 @@ function HomePage() {
         {/* Sidebar */}
         <Col md={3} className="bg-white p-3 shadow-sm">
           <Button
-            className="w-100 mb-3 btn-primary"
+            className="w-100 mb-3 btn-success"
             onClick={() => navigate("/create-email")}
           >
             <i className="bi bi-pencil"></i> Compose
@@ -176,11 +176,11 @@ function HomePage() {
                     cursor: "pointer",
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#f9f9f9")
+                    (e.currentTarget.style.backgroundColor = "#e9e9e9")
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.backgroundColor = checkedEmails.includes(email.id)
-                      ? "#f9f9f9"
+                      ? "#e9e9e9"
                       : "#fff")
                   }
                 >
