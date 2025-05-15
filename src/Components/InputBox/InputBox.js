@@ -2,7 +2,7 @@ import { forwardRef, useId } from 'react';
 
 function InputBox (
   {
-    className = "shadow appearance-none bg-slate-100 border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
+    className = "w-full px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-md focus:outline-none focus:ring focus:border-indigo-500",
     placeholder,
     type = "text",
     label,
@@ -21,7 +21,7 @@ function InputBox (
         (
           <label
             htmlFor = { id }
-            className = "block text-gray-700 text-sm font-bold mb-2"
+            className = "block text-indigo-600 font-medium mb-1"
           >
             { label }
           </label>

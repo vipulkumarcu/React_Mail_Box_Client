@@ -4,6 +4,7 @@ import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import LandingPage from './Pages/LandingPage';
+import ComposeEmail from './Pages/ComposeEmail';
 
 const routes = createBrowserRouter (
   [
@@ -14,6 +15,7 @@ const routes = createBrowserRouter (
         { index: true, element: <Home /> },
         { path: "login", element: <Login /> },
         { path: "landing-page", element: <LandingPage /> },
+        { path: "compose-email", element: <ComposeEmail /> },
         { path: "signup", element: <Signup /> },
       ],
     },
