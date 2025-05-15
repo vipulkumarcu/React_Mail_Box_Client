@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Button, FormWrapper, InputBox } from "../Components";
 import { useDispatch } from "react-redux";
 import { enqueueAlert } from "../Features/Slices/AlertSlice";
+import authentication from "../FirebaseServices/Authentication";
+import { setUser } from "../Features/Slices/UserSlice";
+import { useNavigate } from "react-router-dom";
 
 function Signup ()
 {
@@ -11,9 +14,10 @@ function Signup ()
   const [ password, setPassword ] = useState ( "" );
   const [ confirmPassword, setConfirmPassword ] = useState ( "" );
 
+  const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
-  function signupHandler ( e )
+  async function signupHandler ( e )
   {
     e.preventDefault ();
 
@@ -23,7 +27,20 @@ function Signup ()
         enqueueAlert (
           {
             type: "error",
-            message: "Fill out the complete form",
+            message: "Please complete all fields before submitting.",
+          }
+        )
+      );
+      return;
+    }
+
+    if ( password.length < 8 )
+    {
+      dispatch (
+        enqueueAlert (
+          {
+            type: "error",
+            message: "Password must be at least 8 characters long.",
           }
         )
       );
@@ -36,32 +53,52 @@ function Signup ()
         enqueueAlert (
           {
             type: "error",
-            message: "Passwords do not match",
+            message: "Password and Confirm Password do not match.",
           }
         )
       );
       return;
     }
 
-    // Collect User Data
-    const userData = {
-      firstName,
-      lastName,
-      email,
-      password
+    const response = await authentication.signup ( email, password, `${firstName} ${lastName}` );
+
+    if ( !response.status )
+    {
+      dispatch (
+        enqueueAlert (
+          {
+            type: "error",
+            message: response.message || "Signup failed. Please try again.",
+          }
+        )
+      );
+      return;
     }
+
+    const { idToken, refreshToken, expiresIn, displayName } = response.data;
+
+    dispatch (
+      setUser (
+        {
+          idToken,
+          refreshToken,
+          expiresIn,
+          displayName,
+          email,
+        }
+      )
+    );
+
+    navigate ( "/landing-page" );
 
     dispatch (
       enqueueAlert (
         {
           type: "success",
-          message: "User Created Successfully",
-          duration: 1500
+          message: "Account created successfully! You're now logged in.",
         }
       )
     );
-
-    console.log ( userData );
 
     // Clear Form
     setFirstName ( "" );

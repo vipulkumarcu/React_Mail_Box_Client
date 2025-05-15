@@ -8,7 +8,7 @@ function Home ()
   const buttonClass = "bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-2.5 px-8 rounded-lg shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] hover:scale-110 hover:shadow-[0_6px_20px_rgba(99,102,241,0.5)] transform transition duration-300 ease-in-out tracking-wide";
 
   return (
-    <div className = "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4" >
+    <div className = "min-h-screen bg-gradient-to-br from-blue-100 to-indigo-300 flex items-center justify-center px-4" >
 
       <div className = "max-w-3xl text-center" >
 

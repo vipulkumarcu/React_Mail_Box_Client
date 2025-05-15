@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "../Components";
 import { Search, Mail, Send, FileText, Trash2, Star, Archive, CircleUserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { clearUser } from "../Features/Slices/UserSlice";
+import { useDispatch } from "react-redux";
 
 function LandingPage ()
 {
@@ -9,7 +11,11 @@ function LandingPage ()
   const [ currentPage, setCurrentPage ] = useState ( 1 );
   const [ filter, setFilter ] = useState ( "" );
 
-  const emailsPerPage = 10;
+  const dispatch = useDispatch ();
+
+  const displayName = localStorage.getItem ( "displayName" );
+
+  const emailsPerPage = 9;
 
   const navigate = useNavigate ();
 
@@ -91,11 +97,17 @@ function LandingPage ()
     }
   };
 
+  function logoutHandler ()
+  {
+    dispatch ( clearUser () );
+    navigate ( "/" );
+  };
+
   return (
-    <div className = "w-screen h-screen grid grid-cols-[220px_1fr] grid-rows-[auto_1fr] bg-gradient-to-br from-blue-50 to-indigo-100" >
+    <div className = "w-screen h-screen grid grid-cols-[220px_1fr] grid-rows-[auto_1fr] bg-gradient-to-br from-blue-100 to-indigo-300" >
 
       {/* Sidebar */}
-      <aside className = "row-span-2 bg-white shadow-md p-4 space-y-4" >
+      <aside className = "row-span-2 bg-gradient-to-br from-indigo-200 to-purple-200 shadow-md p-4 space-y-4" >
 
         <h2 className = "text-lg font-bold text-indigo-600 mb-4" > Folders </h2>
 
@@ -118,7 +130,7 @@ function LandingPage ()
       </aside>
 
       {/* Topbar */}
-      <header className = "flex items-center justify-between px-6 py-4 bg-white shadow-sm" >
+      <header className = "flex items-center justify-between px-6 py-4 bg-gradient-to-br from-indigo-200 to-purple-200 shadow-sm" >
 
         <div className = "flex items-center gap-3 bg-white px-5 py-3 rounded-full shadow-md w-full max-w-xl" >
 
@@ -137,7 +149,7 @@ function LandingPage ()
         <div className = "flex items-center gap-4 relative ml-4" >
 
           <div>
-            <span className = "text-indigo-600 text-2xl font-semibold" > Welcome </span>
+            <span className = "text-indigo-600 text-2xl font-semibold" > Welcome, { displayName } </span>
           </div>
 
           <button
@@ -166,7 +178,7 @@ function LandingPage ()
                   <Button
                     buttonText = "🚪 Logout"
                     className = "w-full text-start px-5 py-2 hover:bg-red-100 text-red-600 cursor-pointer"
-                    onClick = { () => navigate ( "/" ) }
+                    onClick = { logoutHandler }
                   />
 
                 </ul>

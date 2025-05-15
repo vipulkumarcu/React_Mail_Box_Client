@@ -81,7 +81,7 @@ function ComposeEmail() {
   }
 
   return (
-    <div className = "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6" >
+    <div className = "min-h-screen bg-gradient-to-br from-blue-100 to-indigo-300 p-6" >
 
       <div className = "max-w-7xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden" >
 
@@ -208,6 +208,7 @@ function ComposeEmail() {
                   }
                   onClick = { handleCancel }
                   className = "px-6 py-3 rounded-md bg-gradient-to-r from-red-400 to-red-800 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition"
+                  disabled = { isSending }
                 />
               </div>
 

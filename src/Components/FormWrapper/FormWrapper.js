@@ -5,9 +5,9 @@ function FormWrapper ( { title, children, buttonText, link = "#" } )
 {
   const navigate = useNavigate ();
   return (
-    <div className = "min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100  px-4" >
+    <div className = "min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-300  px-4" >
 
-      <div className = "w-full max-w-lg bg-gradient-to-br from-indigo-200 to-purple-200  shadow-md rounded-lg overflow-hidden" >
+      <div className = "w-full max-w-lg bg-gradient-to-br from-indigo-200 to-purple-200 shadow-md rounded-lg overflow-hidden" >
 
         <div className = "bg-indigo-500 text-white text-center py-3 shadow hover:bg-blue-400 pointer-events-none" >
           <h3 className = "text-lg font-semibold" > { title } </h3>
