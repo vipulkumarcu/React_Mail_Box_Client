@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { dequeueAlert } from "../../Features/Slices/AlertSlice";
+import { dequeueAlert } from "../../Features/AlertSlice";
 import { X } from "lucide-react";
 
 function getAlertStyles ( type )

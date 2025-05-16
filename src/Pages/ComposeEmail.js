@@ -3,7 +3,7 @@ import { InputBox, Button, TextEditor } from "../Components";
 import { Paperclip, SendHorizonal, MailX, PlusCircle, MinusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { enqueueAlert } from "../Features/Slices/AlertSlice";
+import { enqueueAlert } from "../Features/AlertSlice";
 
 
 function ComposeEmail() {

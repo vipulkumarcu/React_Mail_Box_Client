@@ -4,7 +4,7 @@ const initialState = {
   alerts: [] // queue of alerts
 };
 
-export const alertSlice = createSlice (
+const alertSlice = createSlice (
   {
     name: "alert",
 

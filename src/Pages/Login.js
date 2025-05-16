@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Button, FormWrapper, InputBox } from "../Components";
 import { useDispatch } from "react-redux";
-import { enqueueAlert } from "../Features/Slices/AlertSlice";
+import { enqueueAlert } from "../Features/AlertSlice";
 import authentication from "../FirebaseServices/Authentication";
-import { setUser } from "../Features/Slices/UserSlice";
+import { setUser } from "../Features/UserSlice";
 import { useNavigate } from "react-router-dom";
 
 function Login ()

@@ -1,8 +1,8 @@
 import { CircleUserRound, LogOut, MailSearch, UserRoundPen } from "lucide-react";
 import { useState } from "react";
 import Button from "../Button/Button";
-import { clearUser } from "../../Features/Slices/UserSlice";
-import { enqueueAlert } from "../../Features/Slices/AlertSlice";
+import { clearUser } from "../../Features/UserSlice";
+import { enqueueAlert } from "../../Features/AlertSlice";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
