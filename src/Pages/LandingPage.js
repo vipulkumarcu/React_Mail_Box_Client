@@ -4,6 +4,7 @@ import { Search, Mail, Send, FileText, Trash2, Star, Archive, CircleUserRound } 
 import { useNavigate } from "react-router-dom";
 import { clearUser } from "../Features/Slices/UserSlice";
 import { useDispatch } from "react-redux";
+import { enqueueAlert } from "../Features/Slices/AlertSlice";
 
 function LandingPage ()
 {
@@ -101,6 +102,14 @@ function LandingPage ()
   {
     dispatch ( clearUser () );
     navigate ( "/" );
+    dispatch (
+      enqueueAlert (
+        {
+          type: "success",
+          message: "You have been logged out successfully.",
+        }
+      )
+    );
   };
 
   return (

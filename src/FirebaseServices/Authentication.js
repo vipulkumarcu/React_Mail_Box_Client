@@ -92,30 +92,44 @@ class Authentication
         }
       );
 
-      if ( response.ok )
+      if ( !response.ok )
       {
-        const data = await response.json ();
+        const error = await response.json ();
+        return { status: false, message: error.error.message };
+      }
+
+      const authData = await response.json ();
+
+      // Calling getUserData to get the user's profile
+      const profileResp = await this.getUserData ( authData.idToken );
+
+      if ( !profileResp.status )
+      {
         return {
-          status: true,
-          data,
+          status: false,
+          message: profileResp.message
         };
       }
 
-      else
-      {
-        const error = await response.json ();
-        return {
-          status: false,
-          message: error.error.message,
-        };
-      }
+      const user = profileResp.data;
+
+      return {
+        status: true,
+        data: {
+          idToken: authData.idToken,
+          refreshToken: authData.refreshToken,
+          expiresIn: authData.expiresIn,
+          displayName: user.displayName || "",
+          email: user.email,
+        },
+      };
     }
 
     catch ( error )
     {
       return {
         status: false,
-        message: error.message,
+        message: error.message
       };
     }
   }
@@ -140,30 +154,24 @@ class Authentication
         }
       );
 
-      if  ( response.ok )
-        {
-        const data = await response.json ();
-        return {
-          status: true,
-          data,
-        };
-      }
-
-      else
+      if ( !response.ok )
       {
         const error = await response.json ();
-        return {
-          status: false,
-          message: error.error.message,
-        };
+        return { status: false, message: error.error.message };
       }
+
+      const data = await response.json ();
+      return {
+        status: true,
+        data
+      };
     }
 
     catch ( error )
     {
       return {
         status: false,
-        message: error.message,
+        message: error.message
       };
     }
   }
@@ -186,30 +194,27 @@ class Authentication
         }
       );
 
-      if ( response.ok )
-      {
-        const data = await response.json ();
-        return {
-          status: true,
-          data,
-        };
-      }
-
-      else
+      if ( !response.ok )
       {
         const error = await response.json ();
         return {
           status: false,
-          message: error.error.message,
+          message: error.error.message
         };
       }
+
+      const data = await response.json ();
+      return {
+        status: true,
+        data: data.users[0]
+      };
     }
 
     catch ( error )
     {
       return {
         status: false,
-        message: error.message,
+        message: error.message
       };
     }
   }

@@ -2,17 +2,29 @@ import { useState } from "react";
 import { Button, FormWrapper, InputBox } from "../Components";
 import { useDispatch } from "react-redux";
 import { enqueueAlert } from "../Features/Slices/AlertSlice";
+import authentication from "../FirebaseServices/Authentication";
+import { setUser } from "../Features/Slices/UserSlice";
+import { useNavigate } from "react-router-dom";
 
 function Login ()
 {
   const [ email, setEmail ] = useState ( "" );
   const [ password, setPassword ] = useState ( "" );
 
+  const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
-  function loginHandler ( e )
+  const firebaseErrorMap = {
+    EMAIL_NOT_FOUND: "No user found with this email.",
+    INVALID_PASSWORD: "The password is incorrect.",
+    USER_DISABLED: "This user account has been disabled.",
+  };
+
+  async function loginHandler ( e )
   {
     e.preventDefault ();
+
+    // ---------- validation ----------
 
     if ( !email || !password )
     {
@@ -20,25 +32,49 @@ function Login ()
         enqueueAlert (
           {
             type: "error",
-            message: "Fill out the complete form",
+            message: "Please enter both email and password.",
           }
         )
       );
       return;
     }
 
-    const userData = { email, password };
+    // ---------- API ----------
+
+    const response = await authentication.login(email, password);
+
+    if ( !response.status )
+    {
+      dispatch (
+        enqueueAlert (
+          {
+            type: "error",
+            message: firebaseErrorMap[response.message] || "Login failed, please check your credentials."
+          }
+        )
+      );
+
+      return;
+    }
+
+    // ---------- store & redirect ----------
+
+    const { idToken, refreshToken, expiresIn, displayName } = response.data;
+
+    dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email } ) );
+
+    navigate ( "/landing-page" );
 
     dispatch (
       enqueueAlert (
         {
           type: "success",
-          message: "User Logged In Successfully",
+          message: `Welcome back${displayName ? `, ${displayName}` : ""}!`,
         }
       )
     );
 
-    console.log ( userData );
+    // ---------- reset form ----------
 
     setEmail ( "" );
     setPassword ( "" );

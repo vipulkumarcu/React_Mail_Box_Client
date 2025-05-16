@@ -17,9 +17,19 @@ function Signup ()
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
+  const signupErrorMap = {
+    EMAIL_EXISTS              : "This email is already registered.",
+    OPERATION_NOT_ALLOWED     : "Password sign‑in is disabled for this project.",
+    TOO_MANY_ATTEMPTS_TRY_LATER: "Too many attempts. Please wait a bit and try again.",
+    INVALID_EMAIL             : "Please enter a valid email address.",
+    WEAK_PASSWORD             : "Password should be at least 6 characters.",
+  };
+
   async function signupHandler ( e )
   {
     e.preventDefault ();
+
+    // ---------- validation ----------
 
     if ( !firstName || !lastName || !email || !password || !confirmPassword )
     {
@@ -34,13 +44,13 @@ function Signup ()
       return;
     }
 
-    if ( password.length < 8 )
+    if ( password.length < 6 )
     {
       dispatch (
         enqueueAlert (
           {
             type: "error",
-            message: "Password must be at least 8 characters long.",
+            message: "Password must be at least 6 characters long.",
           }
         )
       );
@@ -60,6 +70,8 @@ function Signup ()
       return;
     }
 
+    // ---------- API ----------
+
     const response = await authentication.signup ( email, password, `${firstName} ${lastName}` );
 
     if ( !response.status )
@@ -68,26 +80,19 @@ function Signup ()
         enqueueAlert (
           {
             type: "error",
-            message: response.message || "Signup failed. Please try again.",
+            message: signupErrorMap[response.message] || "Signup failed. Please try again.",
           }
         )
       );
+
       return;
     }
 
+    // ---------- store & redirect ----------
+
     const { idToken, refreshToken, expiresIn, displayName } = response.data;
 
-    dispatch (
-      setUser (
-        {
-          idToken,
-          refreshToken,
-          expiresIn,
-          displayName,
-          email,
-        }
-      )
-    );
+    dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email } ) );
 
     navigate ( "/landing-page" );
 
@@ -95,12 +100,13 @@ function Signup ()
       enqueueAlert (
         {
           type: "success",
-          message: "Account created successfully! You're now logged in.",
+          message: `Welcome aboard, ${firstName}!`,
         }
       )
     );
 
-    // Clear Form
+    // ---------- reset form ----------
+
     setFirstName ( "" );
     setLastName ( "" );
     setEmail ( "" );

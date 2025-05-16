@@ -57,7 +57,7 @@ function Alert ()
         const timer = setTimeout (
           () => {
             dispatch ( dequeueAlert () );
-          }, 1500
+          }, 3000
         );
 
         return () => clearTimeout ( timer );

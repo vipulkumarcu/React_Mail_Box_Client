@@ -37,11 +37,7 @@ const userSlice = createSlice (
         state.displayName = null;
         state.email = null;
 
-        localStorage.removeItem ( "idToken" );
-        localStorage.removeItem ( "refreshToken" );
-        localStorage.removeItem ( "expiresIn" );
-        localStorage.removeItem ( "displayName" );
-        localStorage.removeItem ( "email" );
+        localStorage.clear ();
       },
     }
   }
