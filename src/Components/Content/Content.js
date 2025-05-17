@@ -1,24 +1,14 @@
-import { Inbox, Send, Archive, FileText, Trash2, Star, MessageSquareWarning, MailPlus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Inbox, MailPlus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../Button/Button";
 import EmptyState from "../EmptyState/EmptyState";
 import Table from "../Table/Table";
-
-// icon map
-const icon = {
-  Inbox: Inbox,
-  Sent: Send,
-  Drafts: FileText,
-  Spam: MessageSquareWarning,
-  Trash: Trash2,
-  Starred: Star,
-  Archive: Archive,
-};
+import { iconsMap } from "../../Helpers/HelperIconVariables";
 
 function Content ( { emails, page, perPage, onPaginate, folderLabel } )
 {
   const navigate = useNavigate ();
-  const FolderIcon = icon[ folderLabel ] ?? Inbox;
+  const FolderIcon = iconsMap[ folderLabel ] ?? Inbox;
 
   // slice for current page
   const totalPages = Math.max ( 1, Math.ceil ( emails.length / perPage ) );

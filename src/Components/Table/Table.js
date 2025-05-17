@@ -1,14 +1,5 @@
-import { Calendar, MailOpen, FileText, Trash, Check, Shredder, Mail } from "lucide-react";
-
-const headings = [ "", "Date", "From", "Subject", " " ];
-
-const headingIconMap = {
-  "": <Check size = { 20 } />,
-  Date: <Calendar size = { 20 } />,
-  From: <MailOpen size = { 20 } />,
-  Subject: <FileText size = { 20 } />,
-  " ": <Trash size = { 20 } />,
-}
+import { MailOpen, Shredder, Mail } from "lucide-react";
+import { headingIconMap } from "../../Helpers/HelperIconVariables";
 
 function formatDate ( date )
 {
@@ -23,9 +14,12 @@ function formatDate ( date )
 
 function Table ( { emails } )
 {
+  const headings = Object.keys ( headingIconMap );
+
   const isRead = false;
+
   return (
-    <div className = "rounded-2xl shadow-lg ring-1 ring-indigo-100 overflow-hidden bg-white" >
+    <div className = "w-full overflow-hidden" >
 
       <div
         className = "grid grid-cols-[70px_160px_2fr_3fr_70px] items-center text font-semibold uppercase tracking-wider text-indigo-200 bg-indigo-900/80 backdrop-blur sticky top-0 py-3 px-6"
@@ -48,8 +42,8 @@ function Table ( { emails } )
 
       {
         emails.map (
-          ( email, idx ) => (
-            <div key = {idx} className = "relative group hover:bg-indigo-50" >
+          ( email, index ) => (
+            <div key = { index } className = "relative group hover:bg-indigo-50" >
 
               {/* accent bar */}
               <span
