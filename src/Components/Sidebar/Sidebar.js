@@ -1,4 +1,4 @@
-import { Send, FileText, Trash2, Star, Archive, Inbox, MessageSquareWarning } from "lucide-react";
+import { Send, FileText, Star, Archive, Inbox, MessageSquareWarning, Trash2 } from "lucide-react";
 
 /* folder list is static so we export it for reuse */
 export const emailFolders = [

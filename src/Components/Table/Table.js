@@ -1,11 +1,13 @@
-import { Calendar, MailOpen, FileText } from "lucide-react";
+import { Calendar, MailOpen, FileText, Trash, Check, Shredder } from "lucide-react";
 
-const headings = [ "Date", "From", "Subject" ];
+const headings = [ "", "Date", "From", "Subject", " " ];
 
 const headingIconMap = {
-  Date: <Calendar size = { 14 } />,
-  From: <MailOpen size = { 14 } />,
-  Subject: <FileText size = { 14 } />,
+  "": <Check size = { 20 } />,
+  Date: <Calendar size = { 20 } />,
+  From: <MailOpen size = { 20 } />,
+  Subject: <FileText size = { 20 } />,
+  " ": <Trash size = { 20 } />,
 }
 
 function formatDate ( date )
@@ -22,53 +24,74 @@ function formatDate ( date )
 function Table ( { emails } )
 {
   return (
-    <div className = "shadow-lg ring-1 ring-indigo-100 overflow-hidden bg-white" >
+    <div className = "rounded-2xl shadow-lg ring-1 ring-indigo-100 overflow-hidden bg-white" >
 
-      {/* sticky header */}
-      <div className = "grid grid-cols-12 items-center text-md font-semibold uppercase tracking-wider text-indigo-200 bg-indigo-900/80 backdrop-blur sticky top-0 py-3 px-10" >
-
+      <div
+        className = "grid grid-cols-[70px_160px_2fr_3fr_70px] items-center text font-semibold uppercase tracking-wider text-indigo-200 bg-indigo-900/80 backdrop-blur sticky top-0 py-3 px-6"
+      >
         {
           headings.map (
-            ( heading ) => (
-              <span
-                key = { heading }
-                className = "col-span-3 flex items-center gap-1"
+            ( heading, index ) => (
+              <div
+                key = { index }
+                className = { `flex items-center justify-${ index === 0 || index === headings.length - 1 ? "center" : "start"
+                } gap-1` }
               >
-                { headingIconMap[ heading ] }
-                { heading }
-              </span>
+                { headingIconMap[heading] }
+                { heading.trim () }
+              </div>
             )
           )
         }
-
       </div>
 
       {
         emails.map (
-          ( email, index ) => (
-            <div
-              key = { index }
-              className = "relative group hover:bg-indigo-50"
-            >
+          ( email, idx ) => (
+            <div key = {idx} className = "relative group hover:bg-indigo-50" >
 
               {/* accent bar */}
-              <span className = "absolute left-0 top-0 h-full w-1 bg-purple-600 scale-y-0 group-hover:scale-y-100 origin-top transition-transform" />
+              <span
+                className = "absolute left-0 top-0 h-full w-[3px] bg-purple-600 scale-y-0 group-hover:scale-y-100 origin-top transition-transform"
+              />
 
               <div
-                className = "grid grid-cols-12 items-center px-10 py-4 transition-transform transform group-hover:scale-[1.02] cursor-pointer"
+                className = "grid grid-cols-[70px_160px_2fr_3fr_70px] items-center px-6 py-4 cursor-pointer transition-transform transform group-hover:scale-[1.02]"
               >
 
-                <span className = "col-span-3 text-sm text-gray-600" >
+                <div className = "flex justify-center" >
+                  <input
+                    type = "checkbox"
+                    className = "accent-indigo-600 w-4 h-4"
+                  />
+                </div>
+
+                <span className = "text-sm text-gray-600" >
                   { formatDate ( email.date ) }
                 </span>
 
-                <span className = "col-span-3 truncate text-sm text-gray-700" >
+                <span className = "truncate text-sm text-gray-700" >
                   { email.from }
                 </span>
 
-                <span className = "col-span-3 truncate px-1 font-semibold text-indigo-900" >
+                <span className = "truncate font-semibold text-indigo-900" >
                   { email.subject }
                 </span>
+
+                <div className = "flex justify-center" >
+                  <button
+                    onClick = {
+                      ( event ) => {
+                        event.stopPropagation ();
+                        // onDelete?.( email.id ?? idx );
+                      }
+                    }
+                    className = "text-red-600 hover:text-red-800"
+                  >
+                    <Shredder size = { 20 } />
+                  </button>
+
+                </div>
 
               </div>
 
@@ -76,7 +99,6 @@ function Table ( { emails } )
           )
         )
       }
-
     </div>
   );
 }

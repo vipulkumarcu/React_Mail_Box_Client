@@ -1,6 +1,7 @@
 import { Inbox, Send, Archive, FileText, Trash2, Star, MessageSquareWarning, MailPlus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../Button/Button";
+import EmptyState from "../EmptyState/EmptyState";
 import Table from "../Table/Table";
 
 // icon map
@@ -51,39 +52,45 @@ function Content ( { emails, page, perPage, onPaginate, folderLabel } )
 
       <div className="rounded-2xl shadow-lg ring-1 ring-indigo-100 overflow-hidden bg-white">
 
-        {/* table */}
-        <Table emails = { pageEmails } />
+        {
+          pageEmails.length
+          ? (
+            <>
+              <Table emails = { pageEmails } />
+              {/* <Table emails = { pageEmails } onDelete = { handleDelete } /> */}
+              <div className = "flex items-center justify-between px-8 py-4 bg-white" >
 
-        {/* pagination */}
-        <div className = "flex items-center justify-between px-8 py-4 bg-white" >
+                <Button
+                  buttonText = {
+                    <span className = "flex items-center gap-1" >
+                      <ChevronLeft size = { 16 } /> Prev
+                    </span>
+                  }
+                  className = "text-indigo-600 font-medium hover:text-indigo-800 disabled:opacity-30"
+                  onClick = { () => onPaginate ( "prev" ) }
+                  disabled = { page === 1 }
+                />
 
-          <Button
-            buttonText = {
-              <span className = "flex items-center gap-1" >
-                <ChevronLeft size = { 16 } /> Prev
-              </span>
-            }
-            className = "text-indigo-600 font-medium hover:text-indigo-800 disabled:opacity-30"
-            onClick = { () => onPaginate ( "prev" ) }
-            disabled = { page === 1 }
-          />
+                <span className = "text-sm font-semibold text-gray-600" >
+                  { page } / { totalPages }
+                </span>
 
-          <span className = "text-sm font-semibold text-gray-600" >
-            { page } / { totalPages }
-          </span>
+                <Button
+                  buttonText = {
+                    <span className = "flex items-center gap-1" >
+                      Next <ChevronRight size = { 16 } />
+                    </span>
+                  }
+                  className = "text-indigo-600 font-medium hover:text-indigo-800 disabled:opacity-30"
+                  onClick = { () => onPaginate ( "next" ) }
+                  disabled = { page >= totalPages }
+                />
 
-          <Button
-            buttonText = {
-              <span className = "flex items-center gap-1" >
-                Next <ChevronRight size = { 16 } />
-              </span>
-            }
-            className = "text-indigo-600 font-medium hover:text-indigo-800 disabled:opacity-30"
-            onClick = { () => onPaginate ( "next" ) }
-            disabled = { page >= totalPages }
-          />
-
-        </div>
+              </div>
+            </>
+            )
+          : <EmptyState folder = { folderLabel } />
+        }
 
       </div>
 

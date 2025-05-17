@@ -5,6 +5,7 @@ import { enqueueAlert } from "../Features/AlertSlice";
 import authentication from "../FirebaseServices/Authentication";
 import { setUser } from "../Features/UserSlice";
 import { useNavigate } from "react-router-dom";
+import database from "../FirebaseServices/Database";
 
 function Signup ()
 {
@@ -18,11 +19,11 @@ function Signup ()
   const dispatch = useDispatch ();
 
   const signupErrorMap = {
-    EMAIL_EXISTS              : "This email is already registered.",
-    OPERATION_NOT_ALLOWED     : "Password sign‑in is disabled for this project.",
+    EMAIL_EXISTS: "This email is already registered.",
+    OPERATION_NOT_ALLOWED: "Password sign‑in is disabled for this project.",
     TOO_MANY_ATTEMPTS_TRY_LATER: "Too many attempts. Please wait a bit and try again.",
-    INVALID_EMAIL             : "Please enter a valid email address.",
-    WEAK_PASSWORD             : "Password should be at least 6 characters.",
+    INVALID_EMAIL: "Please enter a valid email address.",
+    WEAK_PASSWORD: "Password should be at least 6 characters.",
   };
 
   async function signupHandler ( e )
@@ -90,9 +91,9 @@ function Signup ()
 
     // ---------- store & redirect ----------
 
-    const { idToken, refreshToken, expiresIn, displayName } = response.data;
+    const { idToken, refreshToken, expiresIn, displayName, localId } = response.data;
 
-    dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email } ) );
+    dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email, localId } ) );
 
     navigate ( "/landing-page" );
 
@@ -112,6 +113,23 @@ function Signup ()
     setEmail ( "" );
     setPassword ( "" );
     setConfirmPassword ( "" );
+
+    // ---------- creating user in the database ----------
+
+    const user = await database.createUser ( localId );
+
+    if ( !user.status )
+    {
+      dispatch (
+        enqueueAlert (
+          {
+            type: "error",
+            message: "Failed to create user. Please try again",
+          }
+        )
+      );
+      return;
+    }
   }
 
   return (

@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar, Topbar, Content } from "../Components";
 
 // Dummy Emails
 import dummyData from "../DummyData/DummyData";
+import database from "../FirebaseServices/Database";
+import { useDispatch } from "react-redux";
+import { enqueueAlert } from "../Features/AlertSlice";
+import { addToInbox } from "../Features/MailSlice";
 
 function LandingPage ()
 {
@@ -10,7 +14,10 @@ function LandingPage ()
   const [ currentPage, setCurrentPage ] = useState ( 1 );
   const [ filter, setFilter ] = useState ( "" );
 
+  const dispatch = useDispatch ();
+
   const displayName = localStorage.getItem ( "displayName" ) || "";
+  const localId = localStorage.getItem ( "localId" );
 
   const emails = dummyData.filter (
     ( e ) =>

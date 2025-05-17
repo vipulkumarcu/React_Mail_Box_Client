@@ -2,13 +2,18 @@ import environmentVariables from "../EnvironmentVariables/EnvironmentVariables";
 
 const { firebaseUrl, firebaseApiKey } = environmentVariables;
 
+function url ( path )
+{
+  return `${firebaseUrl}${path}?key=${firebaseApiKey}`;
+}
+
 class Authentication
 {
   async signup ( email, password, name )
   {
     try
     {
-      const response = await fetch ( `${firebaseUrl}signUp?key=${firebaseApiKey}`,
+      const response = await fetch ( url ( "signUp" ),
         {
           method: "POST",
           headers: {
@@ -59,6 +64,7 @@ class Authentication
         refreshToken: data.refreshToken,
         expiresIn: data.expiresIn,
         displayName: name,
+        localId: data.localId,
       },
     };
   }
@@ -76,7 +82,7 @@ class Authentication
   {
     try
     {
-      const response = await fetch ( `${firebaseUrl}signInWithPassword?key=${firebaseApiKey}`,
+      const response = await fetch ( url ( "signInWithPassword" ),
         {
           method: "POST",
           headers: {
@@ -138,7 +144,7 @@ class Authentication
   {
     try
     {
-      const response = await fetch ( `${firebaseUrl}update?key=${firebaseApiKey}`,
+      const response = await fetch ( url ( "update" ),
         {
           method: "POST",
           headers: {
@@ -180,7 +186,7 @@ class Authentication
   {
     try
     {
-      const response = await fetch ( `${firebaseUrl}lookup?key=${firebaseApiKey}`,
+      const response = await fetch ( url ( "lookup" ),
         {
           method: "POST",
           headers: {
