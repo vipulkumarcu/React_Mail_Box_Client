@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Alert from "./Components/Alert/Alert";
+import Loader from "./Components/Loader/Loader";
 
 function App ()
 {
@@ -9,6 +10,10 @@ function App ()
       <header>
         <Alert />
       </header>
+
+      <aside>
+        <Loader />
+      </aside>
 
       <main>
         <Outlet />

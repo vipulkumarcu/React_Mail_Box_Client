@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import authentication from "../FirebaseServices/Authentication";
 import { setUser } from "../Features/UserSlice";
+import { showLoader, hideLoader } from "../Features/LoaderSlice";
 import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
 import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
 import { Button, FormWrapper, InputBox } from "../Components";
@@ -15,9 +16,9 @@ function Login ()
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
-  async function loginHandler ( e )
+  async function loginHandler ( event )
   {
-    e.preventDefault ();
+    event.preventDefault ();
 
     // ---------- validation ----------
 
@@ -27,32 +28,43 @@ function Login ()
       return;
     }
 
-    // ---------- API ----------
-
-    const response = await authentication.login ( email, password );
-
-    if ( !response.status )
+    try
     {
-      showErrorMessage ( dispatch, response.message );
-      return;
+      // ---------- API ----------
+
+      dispatch ( showLoader () );
+
+      const response = await authentication.login ( email, password );
+
+      if ( !response.status )
+      {
+        showErrorMessage ( dispatch, response.message );
+        return;
+      }
+
+      // ---------- store & redirect ----------
+
+      const { idToken, refreshToken, expiresIn, displayName } = response.data;
+
+      dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email } ) );
+
+      navigate ( "/landing-page" );
+
+      showSuccessMessage ( dispatch, successMessages.LOGIN_SUCCESS, 1500 );
+
+      showInfoMessage ( dispatch, `Welcome back${displayName ? `, ${displayName}` : ""}!` );
+
+      // ---------- reset form ----------
+
+      setEmail ( "" );
+      setPassword ( "" );
     }
 
-    // ---------- store & redirect ----------
+    finally
+    {
+      dispatch ( hideLoader () );
+    }
 
-    const { idToken, refreshToken, expiresIn, displayName } = response.data;
-
-    dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email } ) );
-
-    navigate ( "/landing-page" );
-
-    showSuccessMessage ( dispatch, successMessages.LOGIN_SUCCESS, 1500 );
-
-    showInfoMessage ( dispatch, `Welcome back${displayName ? `, ${displayName}` : ""}!` );
-
-    // ---------- reset form ----------
-
-    setEmail ( "" );
-    setPassword ( "" );
   }
 
   return (

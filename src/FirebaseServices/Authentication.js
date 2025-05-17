@@ -36,7 +36,7 @@ class Authentication
       const error = await response.json ();
       return {
         status: false,
-        message: error.error.message || errorMessages.SIGNUP_FALLBACK,
+        message: errorMessages[error.error.message] || errorMessages.SIGNUP_FALLBACK,
       };
     }
 
@@ -106,7 +106,7 @@ class Authentication
         const error = await response.json ();
         return {
           status: false,
-          message: error.error.message || errorMessages.LOGIN_FALLBACK
+          message: errorMessages[error.error.message] || errorMessages.LOGIN_FALLBACK
         };
       }
 
@@ -171,7 +171,10 @@ class Authentication
       if ( !response.ok )
       {
         const error = await response.json ();
-        return { status: false, message: error.error.message };
+        return {
+          status: false,
+          message: errorMessages[error.error.message]
+        };
       }
 
       const data = await response.json ();
@@ -214,7 +217,7 @@ class Authentication
         const error = await response.json ();
         return {
           status: false,
-          message: error.error.message
+          message: errorMessages[error.error.message]
         };
       }
 

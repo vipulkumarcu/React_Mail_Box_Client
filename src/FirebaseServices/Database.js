@@ -37,7 +37,7 @@ class Database
         const error = await response.json ();
         return {
           status: false,
-          message: error.error || errorMessages.USER_CREATION_FAILED
+          message: errorMessages[error.error.message] || errorMessages.USER_CREATION_FAILED
         };
       }
 
@@ -69,7 +69,7 @@ class Database
         const error = await response.json ();
         return {
           status: false,
-          message: error.error || errorMessages.USER_DATA_FETCH_FAILED
+          message: errorMessages[error.error.message] || errorMessages.USER_DATA_FETCH_FAILED
         };
       }
 
@@ -109,7 +109,7 @@ class Database
         const error = await response.json ();
         return {
           status: false,
-          message: error.error || errorMessages.MAIL_SEND_FAILED
+          message: errorMessages[error.error.message] || errorMessages.MAIL_SEND_FAILED
         };
       }
 
@@ -142,7 +142,7 @@ class Database
         const error = await getresponse.json ();
         return {
           status: false,
-          message: error.error || errorMessages.MAIL_NOT_FOUND
+          message: errorMessages[error.error.message] || errorMessages.MAIL_NOT_FOUND
         };
       }
 
@@ -164,7 +164,7 @@ class Database
         const error = await postresponse.json ();
         return {
           status: false,
-          message: error.error || errorMessages.MAIL_TRASH_FAILED
+          message: errorMessages[error.error.message] || errorMessages.MAIL_TRASH_FAILED
         };
       }
 
@@ -205,7 +205,7 @@ class Database
         const error = await response.json ();
         return {
           status: false,
-          message: error.error || errorMessages.MAIL_DELETION_FAILED
+          message: errorMessages[error.error.message] || errorMessages.MAIL_DELETION_FAILED
         };
       }
 

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import authentication from "../FirebaseServices/Authentication";
 import database from "../FirebaseServices/Database";
 import { setUser } from "../Features/UserSlice";
+import { showLoader, hideLoader } from "../Features/LoaderSlice";
 import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
 import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
 import { Button, FormWrapper, InputBox } from "../Components";
@@ -43,44 +44,54 @@ function Signup ()
       return;
     }
 
-    // ---------- API ----------
-
-    const response = await authentication.signup ( email, password, `${firstName} ${lastName}` );
-
-    if ( !response.status )
+    try
     {
-      showErrorMessage ( dispatch, response.message );
-      return;
+      // ---------- API ----------
+
+      dispatch ( showLoader () );
+
+      const response = await authentication.signup ( email, password, `${firstName} ${lastName}` );
+
+      if ( !response.status )
+      {
+        showErrorMessage ( dispatch, response.message );
+        return;
+      }
+
+      // ---------- store & redirect ----------
+
+      const { idToken, refreshToken, expiresIn, displayName, localId } = response.data;
+
+      dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email, localId } ) );
+
+      navigate ( "/landing-page" );
+
+      showSuccessMessage ( dispatch, successMessages.SIGNUP_SUCCESS, 1500 );
+
+      showInfoMessage ( dispatch, `Welcome aboard, ${firstName}!` );
+
+      // ---------- reset form ----------
+
+      setFirstName ( "" );
+      setLastName ( "" );
+      setEmail ( "" );
+      setPassword ( "" );
+      setConfirmPassword ( "" );
+
+      // ---------- creating user in the database ----------
+
+      const user = await database.createUser ( localId );
+
+      if ( !user.status )
+      {
+        showErrorMessage ( dispatch, user.message );
+        return;
+      }
     }
 
-    // ---------- store & redirect ----------
-
-    const { idToken, refreshToken, expiresIn, displayName, localId } = response.data;
-
-    dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email, localId } ) );
-
-    navigate ( "/landing-page" );
-
-    showSuccessMessage ( dispatch, successMessages.SIGNUP_SUCCESS, 1500 );
-
-    showInfoMessage ( dispatch, `Welcome aboard, ${firstName}!` );
-
-    // ---------- reset form ----------
-
-    setFirstName ( "" );
-    setLastName ( "" );
-    setEmail ( "" );
-    setPassword ( "" );
-    setConfirmPassword ( "" );
-
-    // ---------- creating user in the database ----------
-
-    const user = await database.createUser ( localId );
-
-    if ( !user.status )
+    finally
     {
-      showErrorMessage ( dispatch, user.message );
-      return;
+      dispatch ( hideLoader () );
     }
   }
 

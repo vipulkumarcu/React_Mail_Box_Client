@@ -68,9 +68,6 @@ export const successMessages = {
   EMAIL_DELETED:               "Email deleted successfully.",
   EMAIL_MOVED_TO_TRASH:        "Email moved to trash.",
 
-  /* ─── FORM SUCCESS ───────────────── */
-  FORM_SUBMITTED:              "Form submitted successfully.",
-
-  /* ─── GENERIC SUCCESS ───────────────── */
-  OPERATION_SUCCESS:           "Operation completed successfully.",
+  /* ─── DEFAULT ERROR ───────────────── */
+  DEFAULT:                    "An unexpected error occurred. Please try again.",
 };
