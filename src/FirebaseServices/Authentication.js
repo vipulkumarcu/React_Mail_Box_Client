@@ -1,6 +1,7 @@
-import environmentVariables from "../EnvironmentVariables/EnvironmentVariables";
+import EnvironmentVariables from "../EnvironmentVariables/EnvironmentVariables";
+import { errorMessages } from "../Helpers/HelperAlertMessages";
 
-const { firebaseUrl, firebaseApiKey } = environmentVariables;
+const { firebaseUrl, firebaseApiKey } = EnvironmentVariables;
 
 function url ( path )
 {
@@ -9,6 +10,7 @@ function url ( path )
 
 class Authentication
 {
+  //------------- Sign-up -------------
   async signup ( email, password, name )
   {
     try
@@ -34,7 +36,7 @@ class Authentication
       const error = await response.json ();
       return {
         status: false,
-        message: error.error.message,
+        message: error.error.message || errorMessages.SIGNUP_FALLBACK,
       };
     }
 
@@ -52,7 +54,7 @@ class Authentication
     {
       return {
         status: false,
-        message: "User created, but failed to update profile",
+        message: errorMessages.USER_PROFILE_UPDATE,
       };
     }
 
@@ -78,6 +80,7 @@ class Authentication
     }
   }
 
+  //------------- Login -------------
   async login ( email, password )
   {
     try
@@ -101,7 +104,10 @@ class Authentication
       if ( !response.ok )
       {
         const error = await response.json ();
-        return { status: false, message: error.error.message };
+        return {
+          status: false,
+          message: error.error.message || errorMessages.LOGIN_FALLBACK
+        };
       }
 
       const authData = await response.json ();
@@ -127,6 +133,7 @@ class Authentication
           expiresIn: authData.expiresIn,
           displayName: user.displayName || "",
           email: user.email,
+          localId: authData.localId,
         },
       };
     }
@@ -140,6 +147,7 @@ class Authentication
     }
   }
 
+  //------------- Update Profile -------------
   async updateProfile ( { idToken, displayName } )
   {
     try
@@ -182,6 +190,7 @@ class Authentication
     }
   }
 
+  //------------- Get User Data --------------
   async getUserData ( idToken )
   {
     try
@@ -225,6 +234,7 @@ class Authentication
     }
   }
 
+  //------------- Refresh Token --------------
   async refreshIdToken ( refreshToken )
   {
     const response = await fetch ( `https://securetoken.googleapis.com/v1/token?key=${firebaseApiKey}`,

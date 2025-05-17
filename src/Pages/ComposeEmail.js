@@ -76,7 +76,7 @@ function ComposeEmail() {
 
   function handleCancel ()
   {
-    const isConfirmed  = window.confirm ( "Are you sure you want to cancel?" );
+    const isConfirmed  = window.confirm ( "Are you sure you want to cancel ?" );
     if ( isConfirmed  ) navigate ( "/landing-page" );
   }
 

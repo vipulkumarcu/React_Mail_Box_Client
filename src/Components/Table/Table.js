@@ -1,4 +1,4 @@
-import { Calendar, MailOpen, FileText, Trash, Check, Shredder } from "lucide-react";
+import { Calendar, MailOpen, FileText, Trash, Check, Shredder, Mail } from "lucide-react";
 
 const headings = [ "", "Date", "From", "Subject", " " ];
 
@@ -23,6 +23,7 @@ function formatDate ( date )
 
 function Table ( { emails } )
 {
+  const isRead = false;
   return (
     <div className = "rounded-2xl shadow-lg ring-1 ring-indigo-100 overflow-hidden bg-white" >
 
@@ -59,11 +60,12 @@ function Table ( { emails } )
                 className = "grid grid-cols-[70px_160px_2fr_3fr_70px] items-center px-6 py-4 cursor-pointer transition-transform transform group-hover:scale-[1.02]"
               >
 
-                <div className = "flex justify-center" >
-                  <input
-                    type = "checkbox"
-                    className = "accent-indigo-600 w-4 h-4"
-                  />
+                <div className = "flex justify-center items-center" >
+                  {
+                    isRead
+                    ? <MailOpen className="text-indigo-600 w-5 h-5" />
+                    : <Mail className="text-gray-400 w-5 h-5" />
+                  }
                 </div>
 
                 <span className = "text-sm text-gray-600" >

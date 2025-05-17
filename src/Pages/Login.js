@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Button, FormWrapper, InputBox } from "../Components";
 import { useDispatch } from "react-redux";
-import { enqueueAlert } from "../Features/AlertSlice";
+import { useNavigate } from "react-router-dom";
 import authentication from "../FirebaseServices/Authentication";
 import { setUser } from "../Features/UserSlice";
-import { useNavigate } from "react-router-dom";
+import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
+import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
+import { Button, FormWrapper, InputBox } from "../Components";
 
 function Login ()
 {
@@ -14,12 +15,6 @@ function Login ()
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
-  const firebaseErrorMap = {
-    EMAIL_NOT_FOUND: "No user found with this email.",
-    INVALID_PASSWORD: "The password is incorrect.",
-    USER_DISABLED: "This user account has been disabled.",
-  };
-
   async function loginHandler ( e )
   {
     e.preventDefault ();
@@ -28,32 +23,17 @@ function Login ()
 
     if ( !email || !password )
     {
-      dispatch (
-        enqueueAlert (
-          {
-            type: "error",
-            message: "Please enter both email and password.",
-          }
-        )
-      );
+      showErrorMessage ( dispatch, errorMessages.EMPTY_FIELDS );
       return;
     }
 
     // ---------- API ----------
 
-    const response = await authentication.login(email, password);
+    const response = await authentication.login ( email, password );
 
     if ( !response.status )
     {
-      dispatch (
-        enqueueAlert (
-          {
-            type: "error",
-            message: firebaseErrorMap[response.message] || "Login failed, please check your credentials."
-          }
-        )
-      );
-
+      showErrorMessage ( dispatch, response.message );
       return;
     }
 
@@ -65,14 +45,9 @@ function Login ()
 
     navigate ( "/landing-page" );
 
-    dispatch (
-      enqueueAlert (
-        {
-          type: "success",
-          message: `Welcome back${displayName ? `, ${displayName}` : ""}!`,
-        }
-      )
-    );
+    showSuccessMessage ( dispatch, successMessages.LOGIN_SUCCESS, 1500 );
+
+    showInfoMessage ( dispatch, `Welcome back${displayName ? `, ${displayName}` : ""}!` );
 
     // ---------- reset form ----------
 

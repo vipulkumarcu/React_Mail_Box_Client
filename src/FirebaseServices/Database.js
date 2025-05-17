@@ -1,15 +1,17 @@
-import environmentVariables from "../EnvironmentVariables/EnvironmentVariables";
+import EnvironmentVariables from "../EnvironmentVariables/EnvironmentVariables";
+import { errorMessages } from "../Helpers/HelperAlertMessages";
 
-const { firebaseDatabaseUrl } = environmentVariables;
+const { firebaseDatabaseUrl } = EnvironmentVariables;
 
 /* helper – keeps “.json” & base‑URL logic in one place */
 function url ( path )
 {
-  return `${firebaseDatabaseUrl}users/${path}.json`;
+  return `${firebaseDatabaseUrl}/users/${path}.json`;
 }
 
 class Database
 {
+  //------------- Create User -------------
   async createUser ( localId )
   {
     try
@@ -35,7 +37,7 @@ class Database
         const error = await response.json ();
         return {
           status: false,
-          message: error.error || "Failed to create user"
+          message: error.error || errorMessages.USER_CREATION_FAILED
         };
       }
 
@@ -55,6 +57,7 @@ class Database
     }
   }
 
+  //------------- Get User --------------
   async getUser ( localId )
   {
     try
@@ -66,7 +69,7 @@ class Database
         const error = await response.json ();
         return {
           status: false,
-          message: error.error || "Failed to fetch user"
+          message: error.error || errorMessages.USER_DATA_FETCH_FAILED
         };
       }
 
@@ -86,11 +89,12 @@ class Database
     }
   }
 
+  //------------- Send Email --------------
   async sendEmail ( localId, emailObj )
   {
     try
     {
-      const response = await fetch ( `${firebaseDatabaseUrl}users/${localId}/sent.json`,
+      const response = await fetch ( url ( `${localId}/sent` ),
         {
           method: "POST",
           headers: {
@@ -105,7 +109,7 @@ class Database
         const error = await response.json ();
         return {
           status: false,
-          message: error.error || "Failed to send mail"
+          message: error.error || errorMessages.MAIL_SEND_FAILED
         };
       }
 
@@ -125,6 +129,7 @@ class Database
     }
   }
 
+  //------------- Move to Trash --------------
   async moveToTrash ( localId, folder, emailKey )
   {
     try
@@ -137,7 +142,7 @@ class Database
         const error = await getresponse.json ();
         return {
           status: false,
-          message: error.error || "Mail not found"
+          message: error.error || errorMessages.MAIL_NOT_FOUND
         };
       }
 
@@ -158,7 +163,8 @@ class Database
       {
         const error = await postresponse.json ();
         return {
-          status: false, message: error.error || "Move to trash failed"
+          status: false,
+          message: error.error || errorMessages.MAIL_TRASH_FAILED
         };
       }
 
@@ -183,6 +189,7 @@ class Database
     }
   }
 
+  //------------- Delete Email --------------
   async deleteEmail ( localId, emailKey )
   {
     try
@@ -198,7 +205,7 @@ class Database
         const error = await response.json ();
         return {
           status: false,
-          message: error.error || "Failed to delete mail"
+          message: error.error || errorMessages.MAIL_DELETION_FAILED
         };
       }
 

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Button, FormWrapper, InputBox } from "../Components";
 import { useDispatch } from "react-redux";
-import { enqueueAlert } from "../Features/AlertSlice";
-import authentication from "../FirebaseServices/Authentication";
-import { setUser } from "../Features/UserSlice";
 import { useNavigate } from "react-router-dom";
+import authentication from "../FirebaseServices/Authentication";
 import database from "../FirebaseServices/Database";
+import { setUser } from "../Features/UserSlice";
+import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
+import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
+import { Button, FormWrapper, InputBox } from "../Components";
 
 function Signup ()
 {
@@ -18,14 +19,6 @@ function Signup ()
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
-  const signupErrorMap = {
-    EMAIL_EXISTS: "This email is already registered.",
-    OPERATION_NOT_ALLOWED: "Password sign‑in is disabled for this project.",
-    TOO_MANY_ATTEMPTS_TRY_LATER: "Too many attempts. Please wait a bit and try again.",
-    INVALID_EMAIL: "Please enter a valid email address.",
-    WEAK_PASSWORD: "Password should be at least 6 characters.",
-  };
-
   async function signupHandler ( e )
   {
     e.preventDefault ();
@@ -34,40 +27,19 @@ function Signup ()
 
     if ( !firstName || !lastName || !email || !password || !confirmPassword )
     {
-      dispatch (
-        enqueueAlert (
-          {
-            type: "error",
-            message: "Please complete all fields before submitting.",
-          }
-        )
-      );
+      showErrorMessage ( dispatch, errorMessages.EMPTY_FIELDS );
       return;
     }
 
     if ( password.length < 6 )
     {
-      dispatch (
-        enqueueAlert (
-          {
-            type: "error",
-            message: "Password must be at least 6 characters long.",
-          }
-        )
-      );
+      showErrorMessage ( dispatch, errorMessages.WEAK_PASSWORD );
       return;
     }
 
     if ( password !== confirmPassword )
     {
-      dispatch (
-        enqueueAlert (
-          {
-            type: "error",
-            message: "Password and Confirm Password do not match.",
-          }
-        )
-      );
+      showErrorMessage ( dispatch, errorMessages.PASSWORDS_DO_NOT_MATCH );
       return;
     }
 
@@ -77,15 +49,7 @@ function Signup ()
 
     if ( !response.status )
     {
-      dispatch (
-        enqueueAlert (
-          {
-            type: "error",
-            message: signupErrorMap[response.message] || "Signup failed. Please try again.",
-          }
-        )
-      );
-
+      showErrorMessage ( dispatch, response.message );
       return;
     }
 
@@ -97,14 +61,9 @@ function Signup ()
 
     navigate ( "/landing-page" );
 
-    dispatch (
-      enqueueAlert (
-        {
-          type: "success",
-          message: `Welcome aboard, ${firstName}!`,
-        }
-      )
-    );
+    showSuccessMessage ( dispatch, successMessages.SIGNUP_SUCCESS, 1500 );
+
+    showInfoMessage ( dispatch, `Welcome aboard, ${firstName}!` );
 
     // ---------- reset form ----------
 
@@ -120,14 +79,7 @@ function Signup ()
 
     if ( !user.status )
     {
-      dispatch (
-        enqueueAlert (
-          {
-            type: "error",
-            message: "Failed to create user. Please try again",
-          }
-        )
-      );
+      showErrorMessage ( dispatch, user.message );
       return;
     }
   }
