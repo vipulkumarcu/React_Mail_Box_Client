@@ -3,36 +3,36 @@ import { errorMessages } from "../Helpers/HelperAlertMessages";
 
 const { firebaseDatabaseUrl } = EnvironmentVariables;
 
-/* helper – keeps “.json” & base‑URL logic in one place */
-function url ( path )
+function url ( path, idToken )
 {
-  return `${firebaseDatabaseUrl}/users/${path}.json`;
+  return `${firebaseDatabaseUrl}/users/${path}.json?auth=${idToken}`;
 }
 
 class Database
 {
-  //------------- Create User -------------
-  async createUser ( localId )
+
+  // ------------- Create User -------------
+  async createUser ( localId, idToken )
   {
     try
     {
-      const response = await fetch ( url ( localId ),
+      const response = await fetch ( url ( localId, idToken ),
         {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify (
             {
               inbox: [],
               sent: [],
-              trash: []
+              trash: [],
             }
           ),
         }
       );
 
-      if ( !response.ok )
+          if ( !response.ok )
       {
         const error = await response.json ();
         return {
@@ -58,11 +58,13 @@ class Database
   }
 
   //------------- Get User --------------
-  async getUser ( localId )
+  async getUser ( localId, idToken )
   {
     try
     {
-      const response = await fetch ( url ( localId ) );
+      console.log(url(localId, idToken));
+
+      const response = await fetch ( url ( localId, idToken ) );
 
       if ( !response.ok )
       {
@@ -135,7 +137,7 @@ class Database
     try
     {
       /* 1 ─ fetch */
-      const getresponse = await fetch ( `${firebaseDatabaseUrl}users/${localId}/${folder}/${emailKey}.json` );
+      const getresponse = await fetch ( url ( `${localId}/${folder}/${emailKey}` ) );
 
       if ( !getresponse.ok )
       {
@@ -149,7 +151,7 @@ class Database
       const mail = await getresponse.json();
 
       /* 2 ─ post to trash */
-      const postresponse = await fetch ( `${firebaseDatabaseUrl}users/${localId}/trash.json`,
+      const postresponse = await fetch ( url ( `${localId}/trash` ),
         {
           method: "POST",
           headers: {
@@ -169,7 +171,7 @@ class Database
       }
 
       /* 3 ─ delete original */
-      await fetch ( `${firebaseDatabaseUrl}users/${localId}/${folder}/${emailKey}.json`,
+      await fetch ( url ( `${localId}/${folder}/${emailKey}` ),
         {
           method: "DELETE"
         }
@@ -194,7 +196,7 @@ class Database
   {
     try
     {
-      const response = await fetch ( `${firebaseDatabaseUrl}users/${localId}/trash/${emailKey}.json`,
+      const response = await fetch ( url ( `${localId}/trash/${emailKey}` ),
         {
           method: "DELETE"
         }

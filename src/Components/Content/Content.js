@@ -46,8 +46,8 @@ function Content ( { emails, page, perPage, onPaginate, folderLabel } )
           pageEmails.length
           ? (
             <>
-              <Table emails = { pageEmails } />
-              {/* <Table emails = { pageEmails } onDelete = { handleDelete } /> */}
+              <Table emails = { pageEmails } folderLabel = { folderLabel } />
+              {/* <Table emails = { pageEmails } folderLabel = { folderLabel } onDelete = { handleDelete } /> */}
               <div className = "flex items-center justify-between px-8 py-4 bg-white" >
 
                 <Button

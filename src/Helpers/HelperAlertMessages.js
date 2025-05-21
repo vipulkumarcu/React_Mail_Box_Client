@@ -58,6 +58,7 @@ export const successMessages = {
   /* ─── AUTHENTICATION SUCCESS ───────────────── */
   SIGNUP_SUCCESS:              "Account created successfully!",
   LOGIN_SUCCESS:               "Logged in successfully!",
+  LOGOUT_SUCCESS:              "Logged out successfully!",
   PROFILE_UPDATED:             "Profile updated successfully.",
   TOKEN_REFRESHED:             "Session refreshed.",
 

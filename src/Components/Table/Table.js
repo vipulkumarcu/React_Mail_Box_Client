@@ -1,22 +1,10 @@
 import { MailOpen, Shredder, Mail } from "lucide-react";
+import { formatDate, tableHeadings } from "../../Helpers/HelperTableFunctions";
 import { headingIconMap } from "../../Helpers/HelperIconVariables";
 
-function formatDate ( date )
+function Table ( { emails,  folderLabel } )
 {
-  return new Date( date ).toLocaleDateString ( "en-US",
-    {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }
-  );
-}
-
-function Table ( { emails } )
-{
-  const headings = Object.keys ( headingIconMap );
-
-  const isRead = false;
+  const headings = tableHeadings ( folderLabel );
 
   return (
     <div className = "w-full overflow-hidden" >
@@ -42,8 +30,8 @@ function Table ( { emails } )
 
       {
         emails.map (
-          ( email, index ) => (
-            <div key = { index } className = "relative group hover:bg-indigo-50" >
+          ( email ) => (
+            <div key = { email.id } className = "relative group hover:bg-indigo-50" >
 
               {/* accent bar */}
               <span
@@ -56,18 +44,24 @@ function Table ( { emails } )
 
                 <div className = "flex justify-center items-center" >
                   {
-                    isRead
-                    ? <MailOpen className="text-indigo-600 w-5 h-5" />
-                    : <Mail className="text-gray-400 w-5 h-5" />
+                    email.isRead
+                    ? <MailOpen className="text-indigo-400 w-5 h-5" />
+                    : <Mail className="text-indigo-600 w-5 h-5" />
                   }
                 </div>
 
                 <span className = "text-sm text-gray-600" >
-                  { formatDate ( email.date ) }
+                  { email.receivedDate ? formatDate ( email.receivedDate ) : formatDate ( email.sentDate ) }
                 </span>
 
                 <span className = "truncate text-sm text-gray-700" >
-                  { email.from }
+                  <span className = "text-md font-bold mr-3">
+                    { email.from ? email.from : email.to }
+                  </span>
+
+                  <span>
+                     { email.emailId }
+                  </span>
                 </span>
 
                 <span className = "truncate font-semibold text-indigo-900" >

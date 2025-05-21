@@ -1,10 +1,11 @@
-import { CircleUserRound, LogOut, MailSearch, UserRoundPen } from "lucide-react";
 import { useState } from "react";
-import Button from "../Button/Button";
-import { clearUser } from "../../Features/UserSlice";
-import { enqueueAlert } from "../../Features/AlertSlice";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { CircleUserRound, LogOut, MailSearch, UserRoundPen } from "lucide-react";
+import { clearUser } from "../../Features/UserSlice";
+import { showSuccessMessage } from "../../Helpers/HelperAlertFunctions";
+import { successMessages } from "../../Helpers/HelperAlertMessages";
+import Button from "../Button/Button";
 
 function Topbar ( { filter, setFilter, displayName } )
 {
@@ -16,13 +17,7 @@ function Topbar ( { filter, setFilter, displayName } )
   {
     dispatch ( clearUser () );
     navigate ( "/" );
-    dispatch (
-      enqueueAlert (
-        { type: "success",
-          message: "You have been successfully logged out."
-        }
-      )
-    );
+    showSuccessMessage ( dispatch, successMessages.LOGOUT_SUCCESS );
   };
 
   return (
@@ -37,7 +32,7 @@ function Topbar ( { filter, setFilter, displayName } )
 
         <input
           type = "text"
-          placeholder = "Search your inbox..."
+          placeholder = "Search..."
           value = { filter }
           onChange = { ( e ) => setFilter ( e.target.value ) }
           className = "w-full text-indigo-700 bg-transparent outline-none"

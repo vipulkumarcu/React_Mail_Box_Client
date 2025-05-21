@@ -58,9 +58,24 @@ function Signup ()
         return;
       }
 
-      // ---------- store & redirect ----------
-
       const { idToken, refreshToken, expiresIn, displayName, localId } = response.data;
+
+      // ---------- creating user in the database ----------
+
+      console.log("Creating user with localId:", localId);
+
+      const user = await database.createUser ( localId, idToken );
+      // const user = await database.SendEmail ();
+
+      console.log("User created:", user);
+
+      if ( !user.status )
+      {
+        showErrorMessage ( dispatch, user.message );
+        return;
+      }
+
+      // ---------- store & redirect ---------
 
       dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email, localId } ) );
 
@@ -70,6 +85,10 @@ function Signup ()
 
       showInfoMessage ( dispatch, `Welcome aboard, ${firstName}!` );
 
+      const getresponse = await database.getUser ( localId, idToken );
+
+      console.log("User data:", getresponse);
+
       // ---------- reset form ----------
 
       setFirstName ( "" );
@@ -77,16 +96,6 @@ function Signup ()
       setEmail ( "" );
       setPassword ( "" );
       setConfirmPassword ( "" );
-
-      // ---------- creating user in the database ----------
-
-      const user = await database.createUser ( localId );
-
-      if ( !user.status )
-      {
-        showErrorMessage ( dispatch, user.message );
-        return;
-      }
     }
 
     finally

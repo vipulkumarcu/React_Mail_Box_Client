@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { hideLoader, showLoader } from "../Features/LoaderSlice";
+import useEmails from "../Helpers/HelperTableFunctions";
 import { Sidebar, Topbar, Content } from "../Components";
 
-// Dummy Emails
-import dummyData from "../DummyData/DummyData";
-// import { useDispatch } from "react-redux";
+
+// useEffect to fetch emails when refreshed after checking local storage for user data
 
 function LandingPage ()
 {
@@ -11,16 +13,25 @@ function LandingPage ()
   const [ currentPage, setCurrentPage ] = useState ( 1 );
   const [ filter, setFilter ] = useState ( "" );
 
-  // const dispatch = useDispatch ();
-
   const displayName = localStorage.getItem ( "displayName" ) || "";
-  // const localId = localStorage.getItem ( "localId" );
 
-  const emails = dummyData.filter (
-    ( e ) =>
-      e.subject.toLowerCase ().includes ( filter.toLowerCase () ) ||
-      e.from.toLowerCase ().includes ( filter.toLowerCase () )
+  const dispatch = useDispatch ();
+
+  //-------- Mimicking Signup Loader --------//
+  useEffect (
+    () => {
+      showLoader ();
+
+      const timer = setTimeout (
+        () => dispatch ( hideLoader () ), 4000
+      );
+
+      return () => clearTimeout ( timer );
+    }
   );
+
+
+  const emails = useEmails ( folder, filter );
 
   function paginate ( dir )
   {
