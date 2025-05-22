@@ -1,19 +1,30 @@
-import { Inbox, MailPlus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Button from "../Button/Button";
-import EmptyState from "../EmptyState/EmptyState";
-import Table from "../Table/Table";
+import { useDispatch, useSelector } from "react-redux";
+import { selectFolder, selectPage, selectPageSlice, selectTotalPages, setCurrentPage } from "../../Features/MailSlice";
 import { iconsMap } from "../../Helpers/HelperIconVariables";
+import { Inbox, MailPlus, ChevronLeft, ChevronRight } from "lucide-react";
+import Button from "../Button/Button";
+import Table from "../Table/Table";
+import EmptyState from "../EmptyState/EmptyState";
 
-function Content ( { emails, page, perPage, onPaginate, folderLabel } )
+function Content ()
 {
   const navigate = useNavigate ();
-  const FolderIcon = iconsMap[ folderLabel ] ?? Inbox;
+  const dispatch = useDispatch ();
 
-  // slice for current page
-  const totalPages = Math.max ( 1, Math.ceil ( emails.length / perPage ) );
-  const start = ( page - 1 ) * perPage;
-  const pageEmails  = emails.slice ( start, start + perPage );
+  const folder = useSelector ( selectFolder );
+  const emails = useSelector ( selectPageSlice );
+  const page = useSelector ( selectPage );
+  const totalPages = useSelector ( selectTotalPages );
+
+  const FolderIcon = iconsMap[ folder ] ?? Inbox;
+
+  function paginate ( dir )
+  {
+    if ( dir === "prev" && page > 1 ) dispatch ( setCurrentPage ( page - 1 ) );
+
+    if ( dir === "next" && page < totalPages ) dispatch ( setCurrentPage ( page + 1 ) );
+  }
 
   return (
     <main className = "p-6 overflow-hidden" >
@@ -25,13 +36,14 @@ function Content ( { emails, page, perPage, onPaginate, folderLabel } )
           className = "inline-flex shadow-lg items-center gap-2 bg-indigo-600/10 text-indigo-800 px-5 py-3 rounded-full"
         >
           <FolderIcon size = { 22 } />
-          <span className = "font-semibold text-lg tracking-wide" > { folderLabel } </span>
+          <span className = "font-semibold text-lg tracking-wide" > { folder } </span>
         </div>
 
         <Button
           buttonText = {
             <span className = "flex items-center gap-2" >
-              <MailPlus size = { 18 } /> Compose
+              <MailPlus size = { 18 } />
+              Compose
             </span>
           }
           className = "bg-gradient-to-r from-fuchsia-400 to-pink-600 text-white font-semibold px-6 py-3 rounded-md shadow-lg hover:shadow-xl hover:scale-105 transition"
@@ -43,10 +55,10 @@ function Content ( { emails, page, perPage, onPaginate, folderLabel } )
       <div className="rounded-2xl shadow-lg ring-1 ring-indigo-100 overflow-hidden bg-white">
 
         {
-          pageEmails.length
+          emails.length
           ? (
             <>
-              <Table emails = { pageEmails } folderLabel = { folderLabel } />
+              <Table emails = { emails } folder = { folder } />
               {/* <Table emails = { pageEmails } folderLabel = { folderLabel } onDelete = { handleDelete } /> */}
               <div className = "flex items-center justify-between px-8 py-4 bg-white" >
 
@@ -57,7 +69,7 @@ function Content ( { emails, page, perPage, onPaginate, folderLabel } )
                     </span>
                   }
                   className = "text-indigo-600 font-medium hover:text-indigo-800 disabled:opacity-30"
-                  onClick = { () => onPaginate ( "prev" ) }
+                  onClick = { () => paginate ( "prev" ) }
                   disabled = { page === 1 }
                 />
 
@@ -72,14 +84,14 @@ function Content ( { emails, page, perPage, onPaginate, folderLabel } )
                     </span>
                   }
                   className = "text-indigo-600 font-medium hover:text-indigo-800 disabled:opacity-30"
-                  onClick = { () => onPaginate ( "next" ) }
+                  onClick = { () => paginate ( "next" ) }
                   disabled = { page >= totalPages }
                 />
 
               </div>
             </>
             )
-          : <EmptyState folder = { folderLabel } />
+          : <EmptyState folder = { folder } />
         }
 
       </div>

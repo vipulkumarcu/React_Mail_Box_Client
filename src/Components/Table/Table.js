@@ -1,16 +1,19 @@
-import { MailOpen, Shredder, Mail } from "lucide-react";
-import { formatDate, tableHeadings } from "../../Helpers/HelperTableFunctions";
+import { useDispatch } from "react-redux";
+import { addToTrash, removeFromTrash } from "../../Features/MailSlice";
 import { headingIconMap } from "../../Helpers/HelperIconVariables";
+import { formatDate, tableHeadings } from "../../Helpers/HelperTableFunctions";
+import { MailOpen, Shredder, Mail, Trash } from "lucide-react";
 
-function Table ( { emails,  folderLabel } )
+function Table ( { emails, folder } )
 {
-  const headings = tableHeadings ( folderLabel );
+  const dispatch = useDispatch ();
+  const headings = tableHeadings ( folder );
 
   return (
     <div className = "w-full overflow-hidden" >
 
       <div
-        className = "grid grid-cols-[70px_160px_2fr_3fr_70px] items-center text font-semibold uppercase tracking-wider text-indigo-200 bg-indigo-900/80 backdrop-blur sticky top-0 py-3 px-6"
+        className = "grid grid-cols-[70px_135px_2fr_3fr_70px] items-center text font-semibold uppercase tracking-wider text-indigo-200 bg-indigo-900/80 backdrop-blur sticky top-0 py-3 px-6"
       >
         {
           headings.map (
@@ -20,7 +23,7 @@ function Table ( { emails,  folderLabel } )
                 className = { `flex items-center justify-${ index === 0 || index === headings.length - 1 ? "center" : "start"
                 } gap-1` }
               >
-                { headingIconMap[heading] }
+                { headingIconMap[ heading ] }
                 { heading.trim () }
               </div>
             )
@@ -39,7 +42,7 @@ function Table ( { emails,  folderLabel } )
               />
 
               <div
-                className = "grid grid-cols-[70px_160px_2fr_3fr_70px] items-center px-6 py-4 cursor-pointer transition-transform transform group-hover:scale-[1.02]"
+                className = "grid grid-cols-[70px_135px_2fr_3fr_70px] items-center px-6 py-4 cursor-pointer transition-transform transform group-hover:scale-[1.02]"
               >
 
                 <div className = "flex justify-center items-center" >
@@ -69,17 +72,32 @@ function Table ( { emails,  folderLabel } )
                 </span>
 
                 <div className = "flex justify-center" >
-                  <button
-                    onClick = {
-                      ( event ) => {
-                        event.stopPropagation ();
-                        // onDelete?.( email.id ?? idx );
+                  {
+                    folder === "Trash"
+                    ? <button
+                        onClick = {
+                          ( event ) => {
+                            event.stopPropagation ();
+                            dispatch ( removeFromTrash ( { ...email } ) );
+                          }
+                        }
+                        className = "text-red-600 hover:text-red-800"
+                      >
+                        <Trash size = { 20 } />
+                      </button>
+
+                    : <button
+                      onClick = {
+                        ( event ) => {
+                          event.stopPropagation ();
+                          dispatch ( addToTrash ( { ...email, folder } ) );
+                        }
                       }
-                    }
-                    className = "text-red-600 hover:text-red-800"
-                  >
-                    <Shredder size = { 20 } />
-                  </button>
+                      className = "text-red-600 hover:text-red-800"
+                    >
+                      <Shredder size = { 20 } />
+                    </button>
+                  }
 
                 </div>
 

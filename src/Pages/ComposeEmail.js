@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { InputBox, Button, TextEditor } from "../Components";
-import { Paperclip, SendHorizonal, MailX, PlusCircle, MinusCircle } from "lucide-react";
+import { Paperclip, SendHorizonal, MailX, PlusCircle, MinusCircle, MailIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { enqueueAlert } from "../Features/AlertSlice";
@@ -86,7 +86,10 @@ function ComposeEmail() {
       <div className = "max-w-7xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden" >
 
         <div className = "bg-indigo-500 text-white text-center py-5 shadow hover:bg-blue-400 pointer-events-none" >
-          <h3 className = "text-4xl font-semibold" > 📨 Compose Email </h3>
+          <h3 className = "text-4xl font-semibold flex justify-center items-center gap-3" >
+            <MailIcon className = "w-10 h-10" />
+            Compose Email
+          </h3>
         </div>
 
         <form

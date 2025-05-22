@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { CircleUserRound, LogOut, MailSearch, UserRoundPen } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import { clearUser } from "../../Features/UserSlice";
-import { showSuccessMessage } from "../../Helpers/HelperAlertFunctions";
+import { setFilter } from "../../Features/MailSlice";
 import { successMessages } from "../../Helpers/HelperAlertMessages";
+import { showSuccessMessage } from "../../Helpers/HelperAlertFunctions";
+import { CircleUserRound, LogOut, MailSearch, UserRoundPen } from "lucide-react";
 import Button from "../Button/Button";
 
-function Topbar ( { filter, setFilter, displayName } )
+function Topbar ()
 {
   const [ open, setOpen ] = useState ( false );
+
+  const filter = useSelector ( ( state ) => state.mail.filter );
+  const displayName = useSelector ( ( state ) => state.user.displayName );
+
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
@@ -34,7 +39,7 @@ function Topbar ( { filter, setFilter, displayName } )
           type = "text"
           placeholder = "Search..."
           value = { filter }
-          onChange = { ( e ) => setFilter ( e.target.value ) }
+          onChange = { ( e ) => dispatch ( setFilter ( e.target.value ) ) }
           className = "w-full text-indigo-700 bg-transparent outline-none"
         />
 

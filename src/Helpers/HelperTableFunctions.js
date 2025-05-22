@@ -1,25 +1,21 @@
-import { useMemo } from "react";
 import { headingIconMap } from "./HelperIconVariables";
-import InboxJSON  from "../Data/Inbox.json";
-import SentJSON   from "../Data/Sent.json";
-import TrashJSON  from "../Data/Trash.json";
 
 //----------Headings of the Table----------
-export function tableHeadings ( folderLabel )
+export function tableHeadings ( folder )
 {
   let headings = Object.keys ( headingIconMap );
 
-  if ( folderLabel === "Sent" || folderLabel === "Drafts" )
+  if  ( [ "Sent", "Drafts" ].includes ( folder ) )
   {
     return headings = headings.filter ( heading => heading !== "From" && heading !== "Mail" );
   }
 
-  else if ( folderLabel === "Inbox" || folderLabel === "Spam" )
+  else if ( [ "Inbox", "Spam" ].includes ( folder ) )
   {
     return headings = headings.filter ( heading => heading !== "To" && heading !== "Mail" );
   }
 
-  else if ( folderLabel === "Trash" )
+  else if ( [ "Trash" ].includes ( folder ) )
   {
     return headings = headings.filter ( heading => heading !== "To" && heading !== "From" );
   }
@@ -54,7 +50,7 @@ export function formatDate ( date, type )
 }
 
 //----------Email Data Formatting----------
-function formatEmailData ( rawObj )
+export function formatEmailData ( rawObj )
 {
   return Object.values ( rawObj ).map (
     ( e ) => (
@@ -71,36 +67,5 @@ function formatEmailData ( rawObj )
         attachments:  e.attachment_count,
       }
     )
-  );
-}
-
-//----------Email Data Filtering Hook----------
-export default function useEmails ( folder, filter )
-{
-  /* Build the data map just once */
-  const dataMap = useMemo (
-    () => (
-      {
-        Inbox: formatEmailData ( InboxJSON ),
-        Sent:  formatEmailData ( SentJSON ),
-        Trash: formatEmailData ( TrashJSON ),
-      }
-    ), []
-  );
-
-  /* Folder-specific list + text filter */
-  return useMemo (
-    () => {
-      const list  = dataMap[folder] ?? [];
-      const term  = filter.trim ().toLowerCase ();
-
-      return term
-        ? list.filter (
-            ( event ) =>
-              event.subject.toLowerCase ().includes ( term ) ||
-              event.from.toLowerCase ().includes ( term )
-          )
-        : list;
-    }, [ dataMap, folder, filter ]
   );
 }

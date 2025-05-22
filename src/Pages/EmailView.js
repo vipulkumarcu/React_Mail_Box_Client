@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MailOpen, Clock, Paperclip, FileText,Download, ArrowBigLeft, Shredder, Mail, AtSign, } from "lucide-react";
+import { MailOpen, Clock, Paperclip, FileText,Download, ArrowBigLeft, Shredder, AtSign, User, } from "lucide-react";
 import { formatDate } from "../Helpers/HelperTableFunctions";
 import { attachmentIcons } from "../Helpers/HelperIconVariables";
 import { Button } from "../Components";
@@ -79,7 +79,7 @@ export default function EmailView ()
             </div>
 
             <div className = "flex items-center gap-2" >
-              <Mail className = "w-6 h-6 text-indigo-500" />
+              <User className = "w-6 h-6 text-indigo-500" />
               <span> { email.to } </span>
             </div>
 
