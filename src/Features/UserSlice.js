@@ -1,12 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  idToken: localStorage.getItem ( "idToken" ) || null,
-  refreshToken: localStorage.getItem ( "refreshToken" ) || null,
+  userId: localStorage.getItem ( "userId" ) || null,
+  userName: localStorage.getItem ( "userName" ) || null,
+  userEmail: localStorage.getItem ( "userEmail" ) || null,
+  sessionId: localStorage.getItem ( "sessionId" ) || null,
   expiresIn: localStorage.getItem ( "expiresIn" ) || null,
-  displayName: localStorage.getItem ( "displayName" ) || null,
-  email: localStorage.getItem ( "email" ) || null,
-  localId: localStorage.getItem ( "localId" ) || null
 };
 
 const userSlice = createSlice (
@@ -17,36 +16,53 @@ const userSlice = createSlice (
 
     reducers: {
       setUser: ( state, action ) => {
-        const { idToken, refreshToken, expiresIn, displayName, email, localId } = action.payload;
-        state.idToken = idToken;
-        state.refreshToken = refreshToken;
-        state.expiresIn = expiresIn;
-        state.displayName = displayName;
-        state.email = email;
-        state.localId = localId;
 
-        localStorage.setItem ( "idToken", action.payload.idToken );
-        localStorage.setItem ( "refreshToken", action.payload.refreshToken );
-        localStorage.setItem ( "expiresIn", action.payload.expiresIn );
-        localStorage.setItem ( "displayName", action.payload.displayName );
-        localStorage.setItem ( "email", action.payload.email );
-        localStorage.setItem ( "localId", action.payload.localId );
+        //-------------- Destructure payload ---------------
+        const { userId, userName, userEmail, sessionId, expiresIn } = action.payload;
+
+        //-------------- Update state ---------------
+        state.userId = userId;
+        state.userName = userName;
+        state.userEmail = userEmail;
+        state.sessionId = sessionId;
+        state.expiresIn = expiresIn;
+
+        //-------------- Update localStorage ---------------
+        localStorage.setItem ( "userId", userId );
+        localStorage.setItem ( "userName", userName );
+        localStorage.setItem ( "userEmail", userEmail );
+        localStorage.setItem ( "sessionId", sessionId );
+        localStorage.setItem ( "expiresIn", expiresIn );
       },
 
       clearUser: ( state ) => {
-        state.idToken = null;
-        state.refreshToken = null;
-        state.expiresIn = null;
-        state.displayName = null;
-        state.email = null;
-        state.localId = null;
 
+        //-------------- Update state ---------------
+        state.userId = null;
+        state.userName = null;
+        state.userEmail = null;
+        state.sessionId = null;
+        state.expiresIn = null;
+
+        //-------------- Update localStorage ---------------
         localStorage.clear ();
+      },
+
+      refreshSession: ( state, action ) => {
+
+        //-------------- Destructure payload ---------------
+        const { expiresIn } = action.payload;
+
+        //-------------- Update state ---------------
+        state.expiresIn = expiresIn;
+
+        //-------------- Update localStorage ---------------
+        localStorage.setItem ( "expiresIn", action.payload.expiresIn );
       },
     }
   }
 );
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, clearUser, refreshSession } = userSlice.actions;
 
 export default userSlice.reducer;

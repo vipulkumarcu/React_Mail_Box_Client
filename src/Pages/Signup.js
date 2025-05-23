@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import authentication from "../FirebaseServices/Authentication";
-import database from "../FirebaseServices/Database";
+import authentication from "../AppwriteServices/Authentication";
 import { setUser } from "../Features/UserSlice";
 import { showLoader, hideLoader } from "../Features/LoaderSlice";
 import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
@@ -11,20 +10,23 @@ import { Button, FormWrapper, InputBox } from "../Components";
 
 function Signup ()
 {
+  /* ───────────────────────── FORM STATES ───────────────────────── */
   const [ firstName, setFirstName ] = useState ( "" );
   const [ lastName, setLastName ] = useState ( "" );
   const [ email, setEmail ] = useState ( "" );
   const [ password, setPassword ] = useState ( "" );
   const [ confirmPassword, setConfirmPassword ] = useState ( "" );
 
+  /* ───────────────────────── HOOKS ───────────────────────── */
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
+  /* ───────────────────────── SIGNUP HANDLER ───────────────────────── */
   async function signupHandler ( e )
   {
     e.preventDefault ();
 
-    // ---------- validation ----------
+    /* ---------- VALIDATION ---------- */
 
     if ( !firstName || !lastName || !email || !password || !confirmPassword )
     {
@@ -44,40 +46,39 @@ function Signup ()
       return;
     }
 
+    /* ---------- DISPLAY LOADER ---------- */
+
+    dispatch ( showLoader () );
+
     try
     {
-      // ---------- API ----------
+      /* ---------- 1. LOGIN REQUEST ---------- */
 
-      dispatch ( showLoader () );
+      const { status, message, data } = await authentication.signup ( email, password, `${firstName} ${lastName}` );
 
-      const response = await authentication.signup ( email, password, `${firstName} ${lastName}` );
-
-      if ( !response.status )
+      if ( !status )
       {
-        showErrorMessage ( dispatch, response.message );
+        showErrorMessage ( dispatch, message );
         return;
       }
 
-      const { idToken, refreshToken, expiresIn, displayName, localId } = response.data;
+      /* ---------- 2. STORE IN REDUX AND LOCAL STORAGE ---------- */
 
-      // ---------- creating user in the database ----------
+      const { user, session } = data;
 
-      console.log("Creating user with localId:", localId);
+      dispatch (
+        setUser (
+          {
+            userId   : user.$id,
+            userName : user.name,
+            userEmail: user.email,
+            sessionId: session.$id,
+            expiresIn: session.expire,
+          }
+        )
+      );
 
-      const user = await database.createUser ( localId, idToken );
-
-
-      console.log("User created:", user.data);
-
-      if ( !user.status )
-      {
-        showErrorMessage ( dispatch, user.message );
-        return;
-      }
-
-      // ---------- store & redirect ---------
-
-      dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email, localId } ) );
+      /* ---------- 3. UI FEEDBACK ---------- */
 
       navigate ( "/landing-page" );
 
@@ -85,11 +86,7 @@ function Signup ()
 
       showInfoMessage ( dispatch, `Welcome aboard, ${firstName}!` );
 
-      const getresponse = await database.getUser ( localId, idToken );
-
-      console.log("User data:", getresponse);
-
-      // ---------- reset form ----------
+      /* ---------- 4. RESET FORM ---------- */
 
       setFirstName ( "" );
       setLastName ( "" );
@@ -98,12 +95,27 @@ function Signup ()
       setConfirmPassword ( "" );
     }
 
+    /* ---------- CATCHING ANY ERROR ---------- */
+
+    catch ( error )
+    {
+      showErrorMessage (
+        dispatch,
+        errorMessages[ error.type?.toUpperCase () ] ||
+          error.message ||
+          errorMessages.DEFAULT
+      );
+    }
+
+    /* ---------- HIDE LOADER ---------- */
+
     finally
     {
       dispatch ( hideLoader () );
     }
   }
 
+  /* ───────────────────────── JSX ───────────────────────── */
   return (
     <>
       <FormWrapper title = "Signup" buttonText = "Already have an account ? Login" link = "/login" >

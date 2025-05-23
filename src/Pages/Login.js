@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import authentication from "../FirebaseServices/Authentication";
+import authentication from "../AppwriteServices/Authentication";
 import { setUser } from "../Features/UserSlice";
 import { showLoader, hideLoader } from "../Features/LoaderSlice";
 import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
@@ -10,17 +10,20 @@ import { Button, FormWrapper, InputBox } from "../Components";
 
 function Login ()
 {
+  /* ───────────────────────── FORM STATES ───────────────────────── */
   const [ email, setEmail ] = useState ( "" );
   const [ password, setPassword ] = useState ( "" );
 
+  /* ───────────────────────── HOOKS ───────────────────────── */
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
+  /* ───────────────────────── LOGIN HANDLER ───────────────────────── */
   async function loginHandler ( event )
   {
     event.preventDefault ();
 
-    // ---------- validation ----------
+    /* ---------- VALIDATION ---------- */
 
     if ( !email || !password )
     {
@@ -28,37 +31,77 @@ function Login ()
       return;
     }
 
+    /* ---------- DISPLAY LOADER ---------- */
+
+    dispatch ( showLoader () );
+
     try
     {
-      // ---------- API ----------
+      /* ---------- 1. LOGIN REQUEST ---------- */
 
-      dispatch ( showLoader () );
+      const loginResponse = await authentication.login ( email, password );
 
-      const response = await authentication.login ( email, password );
-
-      if ( !response.status )
+      if ( !loginResponse.status || !loginResponse.data )
       {
-        showErrorMessage ( dispatch, response.message );
+        showErrorMessage ( dispatch, loginResponse.message );
         return;
       }
 
-      // ---------- store & redirect ----------
+      const sessionData = loginResponse.data;
 
-      const { idToken, refreshToken, expiresIn, displayName } = response.data;
+      /* ---------- 2. FETCH USER PROFILE ---------- */
 
-      dispatch ( setUser ( { idToken, refreshToken, expiresIn, displayName, email } ) );
+      const userDataResponse = await authentication.getUserData ();
+
+      if ( !userDataResponse.status )
+      {
+        showErrorMessage ( dispatch, userDataResponse.message );
+        return;
+      }
+
+      const user = userDataResponse.data;
+
+      /* ---------- 3. STORE IN REDUX AND LOCAL STORAGE ---------- */
+
+      dispatch (
+        setUser (
+          {
+            userId   : user.$id,
+            userName : user.name,
+            userEmail: user.email,
+            sessionId: sessionData.$id,
+            expiresIn: sessionData.expire, // ISO string
+          }
+        )
+      );
+
+      /* ---------- 4. UI FEEDBACK ---------- */
 
       navigate ( "/landing-page" );
 
       showSuccessMessage ( dispatch, successMessages.LOGIN_SUCCESS, 1500 );
 
-      showInfoMessage ( dispatch, `Welcome back${displayName ? `, ${displayName}` : ""}!` );
+      showInfoMessage ( dispatch, `Welcome back${ user.name ? `, ${ user.name }` : "" }!` );
 
-      // ---------- reset form ----------
+      /* ---------- 5. RESET FORM ---------- */
 
       setEmail ( "" );
       setPassword ( "" );
     }
+
+    /* ---------- CATCHING ANY ERROR ---------- */
+
+    catch ( error )
+    {
+      showErrorMessage (
+        dispatch,
+        errorMessages[ error.type?.toUpperCase() ] ||
+          error.message ||
+          errorMessages.DEFAULT
+      );
+    }
+
+    /* ---------- HIDE LOADER ---------- */
 
     finally
     {
@@ -67,6 +110,7 @@ function Login ()
 
   }
 
+  /* ───────────────────────── JSX ───────────────────────── */
   return (
     <FormWrapper title = "Login" buttonText = "Don't have an account ? Register" link = "/signup" >
 

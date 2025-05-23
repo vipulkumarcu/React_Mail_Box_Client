@@ -7,6 +7,7 @@ import { successMessages } from "../../Helpers/HelperAlertMessages";
 import { showSuccessMessage } from "../../Helpers/HelperAlertFunctions";
 import { CircleUserRound, LogOut, MailSearch, UserRoundPen } from "lucide-react";
 import Button from "../Button/Button";
+import authentication from "../../AppwriteServices/Authentication";
 
 function Topbar ()
 {
@@ -18,8 +19,9 @@ function Topbar ()
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
-  function logout ()
+  async function logout ()
   {
+    await authentication.logout ();
     dispatch ( clearUser () );
     navigate ( "/" );
     showSuccessMessage ( dispatch, successMessages.LOGOUT_SUCCESS );
