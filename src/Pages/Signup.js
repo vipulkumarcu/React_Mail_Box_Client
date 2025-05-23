@@ -65,9 +65,9 @@ function Signup ()
       console.log("Creating user with localId:", localId);
 
       const user = await database.createUser ( localId, idToken );
-      // const user = await database.SendEmail ();
 
-      console.log("User created:", user);
+
+      console.log("User created:", user.data);
 
       if ( !user.status )
       {

@@ -85,12 +85,24 @@ export const selectFolderList = createSelector (
 export const selectFilteredList = createSelector (
   [ selectFolderList, selectFilter ],
   ( list, filter ) => {
+
     const term = filter.trim ().toLowerCase ();
     if ( !term ) return list;
+
     return list.filter (
-       ( e ) =>
-        e.subject.toLowerCase ().includes ( term ) ||
-        ( e.from && e.from.toLowerCase ().includes ( term ) )
+      ( e ) => {
+
+        const haystack = [
+          e.subject,
+          e.from,
+          e.to,
+          e.emailId,
+        ];
+
+        return haystack.some (
+          ( text ) => text && text.toLowerCase ().includes ( term )
+        );
+      }
     );
   }
 );
