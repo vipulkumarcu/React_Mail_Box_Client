@@ -2,6 +2,11 @@ import { Client, Account, ID } from "appwrite";
 import EnvironmentVariables from "../EnvironmentVariables/EnvironmentVariables";
 import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
 
+
+// ─────────────────────  ENVIRONMENT VARIABLES  ─────────────────────
+const { appwriteEndpointUrl, appwriteProjectId } = EnvironmentVariables;
+
+
 // ─────────────────────  MAPPING ERROR CORRECTLY  ─────────────────────
 function mapError ( errorType, fallbackKey )
 {
@@ -12,6 +17,7 @@ function mapError ( errorType, fallbackKey )
   return errorMessages[ key ] || errorMessages[ fallbackKey ] || errorMessages.DEFAULT;
 }
 
+
 // ───────────────────── USER AUTHENTICATION  ─────────────────────
 class Authentication
 {
@@ -21,8 +27,8 @@ class Authentication
   constructor ()
   {
     this.client
-      .setEndpoint ( EnvironmentVariables.appwriteEndpointUrl )
-      .setProject ( EnvironmentVariables.appwriteProjectId );
+      .setEndpoint ( appwriteEndpointUrl )
+      .setProject ( appwriteProjectId );
 
     this.account = new Account ( this.client );
   }
@@ -184,6 +190,8 @@ class Authentication
   }
 }
 
+
+// ─────────────────────  EXPORTING OBJECT  ─────────────────────
 const authentication = new Authentication ();
 
 export default authentication;

@@ -1,7 +1,7 @@
 import { Editor } from "@tinymce/tinymce-react";
 import environmentVariables from "../../EnvironmentVariables/EnvironmentVariables";
 
-const { tinyMceApiKey } = environmentVariables;
+const { tinymceApiKey } = environmentVariables;
 
 function TextEditor ( { value, onChange } )
 {
@@ -9,7 +9,7 @@ function TextEditor ( { value, onChange } )
     <div>
       <label className = "block text-indigo-600 font-medium mb-1" > Message </label>
       <Editor
-        apiKey = { tinyMceApiKey }
+        apiKey = { tinymceApiKey }
         value = { value }
         onEditorChange = { onChange }
         init = {

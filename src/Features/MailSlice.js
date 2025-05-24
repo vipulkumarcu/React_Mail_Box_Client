@@ -1,6 +1,11 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit";
 
+
+/* ---------- initial state ---------- */
 const initialState = {
+
+  // { $id, ownerId, folder, subject, body, timestamp, attachments, senderName, senderEmail, receiverName, receiverEmail, isRead }
+
   inbox: [],
   sent: [],
   trash: [],
@@ -12,6 +17,7 @@ const initialState = {
 };
 
 
+/* ---------- slice ---------- */
 const mailSlice = createSlice (
   {
     name: "mail",
@@ -21,33 +27,44 @@ const mailSlice = createSlice (
     reducers: {
     /* CRUD */
       loadData: ( state, { payload } ) => {
-        state.inbox = payload.inbox;
-        state.sent  = payload.sent;
-        state.trash = payload.trash;
+        state.inbox = payload.inbox || [];
+        state.sent  = payload.sent || [];
+        state.trash = payload.trash || [];
       },
 
+      /* add single email to folder */
       addToInbox: ( state, { payload } ) => {
-        state.inbox.push ( payload )
-      },
-      addToSent: ( state, { payload } ) => {
-        state.sent.push ( payload )
-      },
-      addToTrash: ( state, { payload } ) => {
-        state.trash.push ( payload )
-        state[ payload.folder.toLowerCase () ] = state[ payload.folder.toLowerCase () ].filter (
-          ( mail ) => mail.id !== payload.id )
+        state.inbox.unshift ( payload )
       },
 
+      addToSent: ( state, { payload } ) => {
+        state.sent.unshift ( payload )
+      },
+
+      /* move email to Trash (from Inbox or Sent) */
+      addToTrash: ( state, { payload } ) => {
+        const { $id } = payload;
+
+        /* update and push to trash */
+        payload.folder = "Trash";
+        state.trash.unshift ( payload )
+
+        /* remove from the specific folder */
+        state[ payload.folder.toLowerCase () ] = state[ payload.folder.toLowerCase () ].filter (
+          ( mail ) => mail.$id !== $id )
+      },
+
+      /* remove permanently */
       removeFromInbox: ( state, { payload } ) =>{
-        ( state.inbox = state.inbox.filter ( ( mail ) => mail.id !== payload ) )
+        ( state.inbox = state.inbox.filter ( ( mail ) => mail.$id !== payload ) )
       },
 
       removeFromSent: ( state, { payload } ) => {
-        ( state.sent = state.sent.filter ( ( mail ) => mail.id !== payload ) )
+        ( state.sent = state.sent.filter ( ( mail ) => mail.$id !== payload ) )
       },
 
       removeFromTrash: ( state, { payload } ) => {
-        ( state.trash = state.trash.filter ( ( mail ) => mail.id !== payload.id ) )
+        ( state.trash = state.trash.filter ( ( mail ) => mail.$id !== payload ) )
       },
 
       /* UI state */
@@ -66,7 +83,10 @@ const mailSlice = createSlice (
   }
 );
 
+
+/* ---------- actions ---------- */
 export const { loadData, addToInbox, addToSent, addToTrash, removeFromInbox, removeFromSent, removeFromTrash, setFolder, setFilter, setCurrentPage, } = mailSlice.actions;
+
 
 /* ---------- selectors ---------- */
 const selectMailState = ( state ) => state.mail;
@@ -81,7 +101,7 @@ export const selectFolderList = createSelector (
   ( mail, folder ) => mail[ folder.toLowerCase () ] || []
 );
 
-/* filter by subject OR sender */
+/* filter by subject / sender / receiver */
 export const selectFilteredList = createSelector (
   [ selectFolderList, selectFilter ],
   ( list, filter ) => {
@@ -94,9 +114,10 @@ export const selectFilteredList = createSelector (
 
         const haystack = [
           e.subject,
-          e.from,
-          e.to,
-          e.emailId,
+          e.senderName,
+          e.receiverName,
+          e.senderEmail,
+          e.receiverEmail,
         ];
 
         return haystack.some (
@@ -116,6 +137,7 @@ export const selectPageSlice = createSelector (
   }
 );
 
+/* total pages */
 export const selectTotalPages = createSelector (
   [ selectFilteredList, selectPerPage ],
   ( list, perPage ) => Math.max ( 1, Math.ceil ( list.length / perPage ) )

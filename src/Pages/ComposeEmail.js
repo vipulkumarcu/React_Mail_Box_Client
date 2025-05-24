@@ -1,85 +1,166 @@
 import { useState } from "react";
-import { InputBox, Button, TextEditor } from "../Components";
-import { Paperclip, SendHorizonal, MailX, PlusCircle, MinusCircle, MailIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { enqueueAlert } from "../Features/AlertSlice";
+import database from "../AppwriteServices/Database";
+import file from "../AppwriteServices/File";
+import { hideLoader, showLoader } from "../Features/LoaderSlice";
+import { addToSent } from "../Features/MailSlice";
+import { showErrorMessage, showSuccessMessage } from "../Helpers/HelperAlertFunctions";
+import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
+import { attachmentIcons } from "../Helpers/HelperIconVariables";
+import { Paperclip, SendHorizonal, MailX, PlusCircle, MinusCircle, MailIcon, X } from "lucide-react";
+import { EmailInput, InputBox, Button, TextEditor } from "../Components";
 
-
-function ComposeEmail() {
+function ComposeEmail ()
+{
+  /* ───────────────────────── FORM STATES ───────────────────────── */
   const [ to, setTo ] = useState ( "" );
-  const [ cc, setCc ] = useState ( "" );
-  const [ bcc, setBcc ] = useState ( "" );
+  const [ toName, setToName ] = useState ( "" );
+  const [ cc, setCc ] = useState ( [] );
+  const [ bcc, setBcc ] = useState ( [] );
   const [ subject, setSubject ] = useState ( "" );
-  const [ message, setMessage ] = useState ( "" );
+  const [ emailMessage, setEmailMessage ] = useState ( "" );
   const [ attachments, setAttachments ] = useState ( [] );
   const [ showCcBcc, setShowCcBcc ] = useState ( false );
-  const [ isSending, setIsSending ] = useState ( false );
 
+  /* ───────────────────────── USER DATA ───────────────────────── */
+  const ownerId = localStorage.getItem ( "userId" );
+  const senderName = localStorage.getItem ( "userName" );
+  const senderEmail = localStorage.getItem ( "userEmail" );
+
+  /* ───────────────────────── HOOKS ───────────────────────── */
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
-  function handleFileChange ( e )
+  /* ───────────────────────── ADD MULTIPLE ATTACHMENTS ───────────────────────── */
+  function handleFileChange ( event )
   {
-    setAttachments ( [ ...e.target.files ] );
-    e.target.value = null;
+    const files = Array.from ( event.target.files );
+
+    if ( !files.length ) return;
+
+    setAttachments ( ( prev ) => [ ...prev, ...files ] );
+    event.target.value = null;
   };
 
-  function handleSend ( event )
+  /* ───────────────────────── SEND EMAIL ───────────────────────── */
+  async function handleSend ( event )
   {
     event.preventDefault();
 
-    if ( !to.trim () )
+    /* ---------- 1. VALIDATION ---------- */
+
+    if ( !to.trim () || !toName.trim () )
     {
-      dispatch ( enqueueAlert ( { type: "error", message: "Please enter a recipient" } ) );
+      showErrorMessage ( dispatch, errorMessages.EMPTY_RECIPIENTS );
       return;
     }
 
     if ( !subject )
     {
-      dispatch ( enqueueAlert ( { type: "error", message: "Please enter subject" } ) );
+      showErrorMessage ( dispatch, errorMessages.EMPTY_SUBJECT );
       return;
     }
 
-    if ( !message )
+    if ( !emailMessage )
     {
-      dispatch ( enqueueAlert ( { type: "error", message: "Please enter your mail" } ) );
+      showErrorMessage ( dispatch, errorMessages.EMPTY_MESSAGE );
       return;
     }
 
-    const emailData = {
-      to,
-      cc,
-      bcc,
-      subject,
-      message,
-      attachments,
-    };
+    /* ---------- 2. DISPLAY LOADER ---------- */
 
-    console.log ( emailData );
+    dispatch ( showLoader () );
 
-    setIsSending ( true );
+    try
+    {
+      /* ---------- 3. UPLOAD ATTACHMENTS ---------- */
 
-    setTimeout (
-      () => {
-    // Clear fields after sending
+      let uploadedAttachments = [];
+
+      if ( attachments.length )
+      {
+        const uploadResponse = await file.uploadFiles ( attachments );
+
+        if ( !uploadResponse.status )
+        {
+          showErrorMessage ( dispatch, uploadResponse.message );
+          return;
+        }
+
+        uploadedAttachments = uploadResponse.data.map ( ( file ) => file.$id );
+      }
+
+      /* ---------- 4. SEND EMAIL AND REDIRECT ---------- */
+
+      const { status, message, data } = await database.sendEmail (
+        {
+          ownerId: ownerId,
+          subject: subject,
+          body: emailMessage,
+          timestamp: new Date ().toISOString (),
+          attachments: uploadedAttachments,
+          senderName: senderName,
+          senderEmail: senderEmail,
+          receiverName: toName,
+          receiverEmail: to,
+          cc: cc,
+          bcc: bcc,
+        }
+      );
+
+      if ( !status )
+      {
+        showErrorMessage ( dispatch, message );
+        return;
+      }
+
+      navigate ( "/landing-page" );
+
+      /* ---------- 5. SAVE TO REDUX ---------- */
+
+      dispatch ( addToSent ( data ) );
+
+      /* ---------- 6. UI FEEDBACK ---------- */
+      showSuccessMessage ( dispatch, successMessages.EMAIL_SENT );
+
+      /* ---------- 7. RESET FORM ---------- */
       setTo ( "" );
       setCc ( "" );
       setBcc ( "" );
       setSubject ( "" );
-      setMessage ( "" );
+      setEmailMessage ( "" );
       setAttachments ( [] );
-      setIsSending(false);
-      }, 1000
-    );
+    }
+
+    /* ---------- CATCHING ANY ERROR ---------- */
+
+    catch ( error )
+    {
+      showErrorMessage (
+        dispatch,
+        errorMessages[ error.type?.toUpperCase () ]
+          || error.message
+          || errorMessages.DEFAULT
+      );
+    }
+
+    /* ---------- HIDE LOADER ---------- */
+
+    finally
+    {
+      dispatch ( hideLoader () );
+    }
   };
 
+  /* ───────────────────────── CONFIRM AND CANCEL ───────────────────────── */
   function handleCancel ()
   {
     const isConfirmed  = window.confirm ( "Are you sure you want to cancel ?" );
     if ( isConfirmed  ) navigate ( "/landing-page" );
   }
 
+  /* ───────────────────────── JSX ───────────────────────── */
   return (
     <div className = "min-h-screen bg-gradient-to-br from-blue-100 to-indigo-300 p-6" >
 
@@ -101,8 +182,17 @@ function ComposeEmail() {
 
             <div>
               <InputBox
-                label = "To"
-                placeholder = "Enter recipient email"
+                label = "Name"
+                placeholder = "Enter recipient's name"
+                value = { toName }
+                onChange = { ( e ) => setToName ( e.target.value ) }
+              />
+            </div>
+
+            <div>
+              <InputBox
+                label = "Email"
+                placeholder = "Enter recipient's email"
                 value = { to }
                 onChange = { ( e ) => setTo ( e.target.value ) }
               />
@@ -139,21 +229,11 @@ function ComposeEmail() {
               (
                 <div className = "grid grid-cols-1 md:grid-cols-2 gap-4" >
                   <div>
-                    <InputBox
-                      label = "CC"
-                      placeholder = "Enter CC emails"
-                      value = { cc }
-                      onChange = { ( e ) => setCc ( e.target.value ) }
-                    />
+                    <EmailInput label="BCC" emails={bcc} setEmails={setBcc} />
                   </div>
 
                   <div>
-                    <InputBox
-                      label = "BCC"
-                      placeholder = "Enter BCC emails"
-                      value = { bcc }
-                      onChange = { ( e ) => setBcc ( e.target.value ) }
-                    />
+                    <EmailInput label="CC" emails={cc} setEmails={setCc} />
                   </div>
                 </div>
               )
@@ -168,7 +248,7 @@ function ComposeEmail() {
               />
             </div>
 
-            <TextEditor value = { message } onChange = { setMessage } />
+            <TextEditor value = { emailMessage } onChange = { setEmailMessage } />
 
 
             {/* Footer Items - Attach, Cancel, Send Buttons */}
@@ -194,12 +274,11 @@ function ComposeEmail() {
                   buttonText = {
                     <span className = "flex items-center gap-2 font-semibold tracking-wide" >
                       <SendHorizonal className = "w-5 h-5" />
-                      { isSending ? "Sending..." : "Send Email" }
+                      Send Email
                     </span>
                   }
                   type = "submit"
                   className = "px-6 py-3 rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition"
-                  disabled = { isSending }
                 />
 
                 <Button
@@ -211,7 +290,6 @@ function ComposeEmail() {
                   }
                   onClick = { handleCancel }
                   className = "px-6 py-3 rounded-md bg-gradient-to-r from-red-400 to-red-800 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition"
-                  disabled = { isSending }
                 />
               </div>
 
@@ -220,12 +298,70 @@ function ComposeEmail() {
             {
               attachments.length > 0 &&
               (
-                <div className = "bg-indigo-50 rounded-md p-3 text-sm text-indigo-700" >
-                  <strong> Attachments: </strong> {" "}
-                  { attachments.map ( ( file ) => file.name ).join ( ", " )  }
+                <div
+                  className = "bg-gradient-to-r from-indigo-100 to-purple-100 border border-indigo-200 rounded-xl p-5 mt-6 shadow-lg"
+                >
+
+                  <h4
+                    className = "text-base font-semibold text-indigo-800 tracking-wide mb-4 flex items-center gap-2"
+                  >
+                    <Paperclip className = "w-4 h-4 text-indigo-500" />
+                    Attachments:
+                    <span
+                      className = "flex-shrink-0 grid place-items-center w-6 h-6 rounded-full bg-indigo-600  text-white transition"
+                    >
+                      { attachments.length }
+                    </span>
+                  </h4>
+
+                  <div className = "flex flex-wrap gap-3" >
+
+                    {
+                      attachments.map (
+                        ( file, idx ) => {
+                          const extension = file.name.split ( '.' ).pop ().toLowerCase ();
+                          const Icon = attachmentIcons[ extension ] || attachmentIcons.default;
+                          return (
+                            <div
+                              key = { idx }
+                              className = "group flex items-center gap-3 bg-white border border-indigo-200 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition"
+                            >
+                              <div>
+                                <Icon className = "w-5 h-5 text-indigo-500 shrink-0" />
+                              </div>
+
+                              <div className = "min-w-0">
+                                <p className = "text-sm text-indigo-800 font-medium truncate">
+                                  { file.name }
+                                </p>
+                                <p className = "text-xs text-indigo-500">
+                                  { ( file.size / 1024 ).toFixed ( 1 ) } KB • { file.type }
+                                </p>
+                              </div>
+
+                              <button
+                                type = "button"
+                                title = "Remove"
+                                onClick = {
+                                  () => setAttachments ( ( prev ) => prev.filter ( ( f ) => f.name !== file.name ) )
+                                }
+                                className = "flex-shrink-0 grid place-items-center w-6 h-6 rounded-full bg-indigo-200 text-indigo-700 group-hover:bg-red-500 group-hover:text-white transition"
+                              >
+                                <X size = { 12 } strokeWidth = { 3 } />
+                              </button>
+
+                            </div>
+                          );
+                        }
+                      )
+                    }
+
+                  </div>
+
                 </div>
               )
             }
+
           </div>
 
         </form>

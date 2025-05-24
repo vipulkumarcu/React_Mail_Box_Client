@@ -32,6 +32,9 @@ export const errorMessages = {
   STORAGE_INVALID_FILE_TYPE:     "Invalid file type.",
   STORAGE_INVALID_FILE_SIZE:     "File is too large.",
   STORAGE_QUOTA_EXCEEDED:        "Storage quota exceeded.",
+  FILE_UPLOAD_FAILED:            "Failed to upload file.",
+  FILE_DELETION_FAILED:          "Failed to delete file.",
+  FILE_URL_FAILED:               "Failed to generate file URL.",
 
   /* ── FORM-LEVEL & APP-LEVEL (manual) ─────────────────────────── */
   INVALID_EMAIL:                 "Invalid email address.",
@@ -42,7 +45,7 @@ export const errorMessages = {
   PASSWORDS_DO_NOT_MATCH:        "Password and Confirm Password do not match.",
   SIGNUP_FALLBACK:               "Signup failed. Please check your credentials and try again.",
   LOGIN_FALLBACK:                "Login failed. Please check your credentials and try again.",
-  EMPTY_RECIPIENT:               "Please enter a recipient.",
+  EMPTY_RECIPIENTS:               "Please enter recipient's details",
   EMPTY_SUBJECT:                 "Please enter a subject.",
   EMPTY_MESSAGE:                 "Please enter your message.",
 
@@ -51,6 +54,9 @@ export const errorMessages = {
   MAIL_NOT_FOUND:                "Mail not found.",
   MAIL_TRASH_FAILED:             "Failed to move mail to trash.",
   MAIL_DELETION_FAILED:          "Failed to delete mail.",
+  GET_INBOX_FAILED:              "Failed to fetch inbox.",
+  GET_SENT_FAILED:               "Failed to fetch sent emails.",
+  GET_TRASH_FAILED:              "Failed to fetch trash emails.",
 
   /* ── FALLBACK ───────────────────────────────────────────────── */
   DEFAULT:                       "An unexpected error occurred. Please try again.",
@@ -73,8 +79,12 @@ export const successMessages = {
   EMAIL_SENT:          "Email sent successfully.",
   EMAIL_DELETED:       "Email deleted successfully.",
   EMAIL_MOVED_TO_TRASH:"Email moved to trash.",
+  GET_INBOX_SUCCESS:   "Inbox fetched successfully.",
+  GET_SENT_SUCCESS:    "Sent emails fetched successfully.",
+  GET_TRASH_SUCCESS:   "Trash emails fetched successfully.",
 
   /* STORAGE */
+  FILE_URL_GENERATED:  "File URL generated successfully.",
   FILE_UPLOADED:       "File uploaded successfully.",
   FILE_DELETED:        "File deleted successfully.",
 

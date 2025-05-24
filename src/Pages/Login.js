@@ -23,7 +23,7 @@ function Login ()
   {
     event.preventDefault ();
 
-    /* ---------- VALIDATION ---------- */
+    /* ---------- 1. VALIDATION ---------- */
 
     if ( !email || !password )
     {
@@ -31,13 +31,13 @@ function Login ()
       return;
     }
 
-    /* ---------- DISPLAY LOADER ---------- */
+    /* ---------- 2. DISPLAY LOADER ---------- */
 
     dispatch ( showLoader () );
 
     try
     {
-      /* ---------- 1. LOGIN REQUEST ---------- */
+      /* ---------- 3. LOGIN USER AND REDIRECT ---------- */
 
       const loginResponse = await authentication.login ( email, password );
 
@@ -49,7 +49,9 @@ function Login ()
 
       const sessionData = loginResponse.data;
 
-      /* ---------- 2. FETCH USER PROFILE ---------- */
+      navigate ( "/landing-page" );
+
+      /* ---------- 4. FETCH USER DATA ---------- */
 
       const userDataResponse = await authentication.getUserData ();
 
@@ -77,8 +79,6 @@ function Login ()
 
       /* ---------- 4. UI FEEDBACK ---------- */
 
-      navigate ( "/landing-page" );
-
       showSuccessMessage ( dispatch, successMessages.LOGIN_SUCCESS, 1500 );
 
       showInfoMessage ( dispatch, `Welcome back${ user.name ? `, ${ user.name }` : "" }!` );
@@ -95,9 +95,9 @@ function Login ()
     {
       showErrorMessage (
         dispatch,
-        errorMessages[ error.type?.toUpperCase() ] ||
-          error.message ||
-          errorMessages.DEFAULT
+        errorMessages[ error.type?.toUpperCase () ]
+          || error.message
+          || errorMessages.DEFAULT
       );
     }
 
