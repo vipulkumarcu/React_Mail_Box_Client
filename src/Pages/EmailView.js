@@ -3,6 +3,9 @@ import { MailOpen, Clock, Paperclip, FileText,Download, ArrowBigLeft, Shredder, 
 import { formatDate } from "../Helpers/HelperTableFunctions";
 import { attachmentIcons } from "../Helpers/HelperIconVariables";
 import { Button } from "../Components";
+import { addToTrash } from "../Features/MailSlice";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 /* ─────────── HARD-CODED DEMO DATA ─────────── */
 const email = {
@@ -30,6 +33,9 @@ export default function EmailView ()
 {
   const [ fadeIn, setFadeIn ] = useState ( false );
 
+  const navigate = useNavigate ();
+  const dispatch = useDispatch ();
+
   useEffect (
     () => {
       setTimeout ( () => setFadeIn ( true ), 50 );
@@ -53,6 +59,7 @@ export default function EmailView ()
               buttonText = {
                 <ArrowBigLeft className = "w-5 h-5 text-indigo-700 hover:text-white" size = { 22 } />
               }
+              onClick = { () => navigate ( "/landing-page" ) }
             />
 
             <h1 className = "text-3xl font-bold text-indigo-800 tracking-tight flex items-center gap-2" >
@@ -65,6 +72,7 @@ export default function EmailView ()
               buttonText = {
                 <Shredder className = "w-5 h-5 text-red-600" size = { 22 } />
               }
+              onClick = { () => dispatch ( addToTrash ( email ) ) }
             />
 
         </div>

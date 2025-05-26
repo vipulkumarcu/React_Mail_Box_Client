@@ -5,7 +5,7 @@ import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import LandingPage from './Pages/LandingPage';
 import ComposeEmail from './Pages/ComposeEmail';
-// import EmailView from './Pages/EmailView';
+import EmailView from './Pages/EmailView';
 
 const routes = createBrowserRouter (
   [
@@ -14,12 +14,11 @@ const routes = createBrowserRouter (
       element: <App />,
       children: [
         { index: true, element: <Home /> },
-        { path: "*", element: <Home /> },
         { path: "signup", element: <Signup /> },
         { path: "login", element: <Login /> },
         { path: "landing-page", element: <LandingPage /> },
         { path: "compose-email", element: <ComposeEmail /> },
-        // { path: "email-view", element: <EmailView /> },
+        { path: "email-view", element: <EmailView /> },
       ],
     },
   ]
