@@ -3,11 +3,13 @@ import { addToTrash, removeFromTrash, undoFromTrash } from "../../Features/MailS
 import { headingIconMap } from "../../Helpers/HelperIconVariables";
 import { formatDate, getDisplayContact, tableHeadings } from "../../Helpers/HelperTableFunctions";
 import { MailOpen, Shredder, Mail, Trash, ArchiveRestore } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Table ( { emails, folder } )
 {
   /* ---------- HOOK ---------- */
   const dispatch = useDispatch ();
+  const navigate = useNavigate ();
 
   /* ---------- HEADINGS ---------- */
   const headings = tableHeadings ( folder );
@@ -53,7 +55,11 @@ function Table ( { emails, folder } )
             );
 
             return (
-              <div key = { email.$id } className = "relative group hover:bg-indigo-50" >
+              <div
+                key = { email.$id }
+                className = "relative group hover:bg-indigo-50"
+                onClick = { () => navigate ( `/email/${ folder }/${ email.$id }` ) }
+              >
 
                 {/* accent bar */}
                 <span

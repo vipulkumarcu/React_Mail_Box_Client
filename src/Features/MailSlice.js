@@ -10,7 +10,9 @@ const initialState = {
   sent: [],
   trash: [],
 
+  loaded: false,
   folder: "Inbox",
+  unReadCount: 0,
   filter: "",
   currentPage: 1,
   perPage: 7,
@@ -27,9 +29,31 @@ const mailSlice = createSlice (
     reducers: {
     /* CRUD */
       loadData: ( state, { payload } ) => {
+        // Initialize inbox, sent and trash
         state.inbox = payload.inbox || [];
         state.sent  = payload.sent || [];
         state.trash = payload.trash || [];
+
+        // Set loaded to true
+        state.loaded = true;
+
+        // Calculate unread count from inbox using reduce
+        state.unReadCount = state.inbox.reduce (
+          ( count, email ) => ( !email.isRead ? count + 1 : count ), 0
+        );
+      },
+
+      /* mark email as read */
+      mailViewed: ( state, { payload } ) => {
+        const { $id, folder } = payload;
+        const key = folder.toLowerCase ();
+
+        const mail = state[ key ].find ( ( mail ) => mail.$id === $id );
+        if ( mail && !mail.isRead )
+        {
+          mail.isRead = true;
+          state.unReadCount = Math.max ( 0, state.unReadCount - 1 ); // Count never goes below zero
+        }
       },
 
       /* add single email to folder */
@@ -109,7 +133,7 @@ const mailSlice = createSlice (
 
 
 /* ---------- actions ---------- */
-export const { loadData, addToInbox, addToSent, addToTrash, undoFromTrash, removeFromInbox, removeFromSent, removeFromTrash, setFolder, setFilter, setCurrentPage, } = mailSlice.actions;
+export const { loadData, mailViewed, addToInbox, addToSent, addToTrash, undoFromTrash, removeFromInbox, removeFromSent, removeFromTrash, setFolder, setFilter, setCurrentPage, } = mailSlice.actions;
 
 
 /* ---------- selectors ---------- */
@@ -150,6 +174,20 @@ export const selectFilteredList = createSelector (
       }
     );
   }
+);
+
+export const selectLoaded = ( state ) => state.mail.loaded;
+
+/* single email by id */
+export const selectEmailById = createSelector (
+  [
+    ( state ) => state.mail.inbox,
+    ( state ) => state.mail.sent,
+    ( state ) => state.mail.trash,
+    (_, id )  => id,
+  ],
+  ( inbox, sent, trash, id ) =>
+    [ ...inbox, ...sent, ...trash ].find ( ( e ) => e.$id === id )
 );
 
 /* paginated slice + total pages */

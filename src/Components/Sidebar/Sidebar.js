@@ -6,6 +6,7 @@ function Sidebar ( )
 {
   const dispatch = useDispatch ();
   const active = useSelector ( ( state ) => state.mail.folder );
+  const unReadCount = useSelector ( ( state ) => state.mail.unReadCount );
 
   return (
     <aside className = "row-span-2 bg-gradient-to-br from-indigo-200 to-purple-200 shadow-md p-5 space-y-4" >
@@ -30,7 +31,20 @@ function Sidebar ( )
                 <Icon
                   className = { `w-5 h-5 ${ key === active ? "text-white" : "text-indigo-500" }` }
                 />
-                <span className = "font-medium"> { key } </span>
+                <span className = "font-medium">
+                  { key }
+
+                  {
+                    key === "Inbox" &&
+                    <span
+                      className = {
+                        `inline-flex ml-6 items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 rounded-full ${ key === active ? "bg-fuchsia-600" : "bg-fuchsia-700"}`
+                      }
+                    >
+                      { unReadCount }
+                    </span>
+                  }
+                </span>
               </li>
             )
           )

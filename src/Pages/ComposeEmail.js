@@ -318,12 +318,12 @@ function ComposeEmail ()
 
                     {
                       attachments.map (
-                        ( file, idx ) => {
+                        ( file ) => {
                           const extension = file.name.split ( '.' ).pop ().toLowerCase ();
                           const Icon = attachmentIcons[ extension ] || attachmentIcons.default;
                           return (
                             <div
-                              key = { idx }
+                              key = { file.name }
                               className = "group flex items-center gap-3 bg-white border border-indigo-200 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition"
                             >
                               <div>

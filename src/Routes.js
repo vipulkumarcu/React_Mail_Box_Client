@@ -18,7 +18,7 @@ const routes = createBrowserRouter (
         { path: "login", element: <Login /> },
         { path: "landing-page", element: <LandingPage /> },
         { path: "compose-email", element: <ComposeEmail /> },
-        { path: "email-view", element: <EmailView /> },
+        { path: "email/:folder/:id", element: <EmailView /> },
       ],
     },
   ]

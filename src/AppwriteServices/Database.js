@@ -96,7 +96,42 @@ class Database
     }
   }
 
-  /* ─────────── UPDATE EMAIL ─────────── */
+  /* ─────────── MOVE EMAIL TO TRASH ─────────── */
+  async markAsRead ( mailId )
+  {
+    try
+    {
+      /* --------------- Update email document --------------- */
+      const updatedEmailResponse = await this.databases.updateDocument (
+        appwriteDatabaseId,
+        appwriteEmailsCollectionId,
+        mailId,
+        {
+          isRead: true,
+        }
+      );
+
+      /* --------------- Success --------------- */
+      return {
+        // const { status, message, data } = response;
+        status: true,
+        message: successMessages.EMAIL_UPDATED,
+        data: updatedEmailResponse,
+      };
+    }
+
+    /* --------------- Catching any error --------------- */
+    catch ( error )
+    {
+      return {
+        // const { status, message } = response;
+        status: false,
+        message: mapError ( error.type, "MAIL_UPDATE_FAILED" ),
+      }
+    }
+  }
+
+  /* ─────────── MOVE EMAIL TO TRASH ─────────── */
   async moveToTrash ( mailId )
   {
     try

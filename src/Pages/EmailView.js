@@ -1,47 +1,80 @@
 import { useEffect, useState } from "react";
-import { MailOpen, Clock, Paperclip, FileText,Download, ArrowBigLeft, Shredder, AtSign, User, } from "lucide-react";
+import { MailOpen, Clock, Paperclip, Download, ArrowBigLeft, Shredder, AtSign, User, } from "lucide-react";
 import { formatDate } from "../Helpers/HelperTableFunctions";
 import { attachmentIcons } from "../Helpers/HelperIconVariables";
 import { Button } from "../Components";
-import { addToTrash } from "../Features/MailSlice";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-
-/* ─────────── HARD-CODED DEMO DATA ─────────── */
-const email = {
-  subject: "Quarterly Strategy Deck & Brand Assets",
-  from: "team@producthub.io",
-  to: "you@example.com",
-  time: new Date().toISOString(),
-  body: `
-    <p>Hi Team,</p>
-    <p>
-      Please find attached the Q2 strategic deck together with the updated logo
-      pack. Feel free to leave comments before Friday.
-    </p>
-    <p>Cheers,<br/>Chris</p>
-  `,
-  attachments: [
-    { name: "Q2_Strategy_Deck.pdf", size: "1.1 MB", type: "pdf", url: "#" },
-    { name: "Logo_Pack.zip", size: "4.7 MB", type: "zip", url: "#" },
-    { name: "Wireframe.png", size: "820 KB", type: "img", url: "#" },
-  ],
-};
-/* ───────────────────────────────────────────── */
+import { mailViewed, addToTrash, selectEmailById } from "../Features/MailSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { showErrorMessage } from "../Helpers/HelperAlertFunctions";
+import { errorMessages } from "../Helpers/HelperAlertMessages";
+import database from "../AppwriteServices/Database";
 
 export default function EmailView ()
 {
+  /* ───────────────────────────── STATE ────────────────────────────── */
   const [ fadeIn, setFadeIn ] = useState ( false );
 
+  /* ───────────────────────────── HOOKS ────────────────────────────── */
+  const { folder, id } = useParams ();
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
 
+  const email = useSelector ( ( state ) => selectEmailById ( state, id ) );
+
+  /* ───────────────────────── ANIMATION DELAY ───────────────────────── */
   useEffect (
     () => {
-      setTimeout ( () => setFadeIn ( true ), 50 );
+      const timeout = setTimeout ( () => setFadeIn ( true ), 50 );
+
+      return () => clearTimeout ( timeout );
     }, []
   );
 
+  /* ──────────────────────── MARK-AS-READ EFFECT ─────────────────────── */
+  useEffect (
+    () => {
+      if ( !email || email.isRead ) return;
+
+      (
+        async () => {
+          try
+          {
+            const res = await database.markAsRead ( id );
+
+            dispatch ( mailViewed ( { $id: id, folder } ) );        // Currently because API is not being used
+
+            if ( !res.status ) {
+              showErrorMessage ( dispatch, res.message );
+              return;
+            }
+
+            // dispatch ( mailViewed ( { $id: id, folder } ) );
+          }
+
+          catch ( error )
+          {
+            showErrorMessage(
+              dispatch,
+              error.message || errorMessages.DEFAULT
+            );
+          }
+        }
+      )
+
+      ();
+    }, [ email, id, folder, dispatch ]
+  );
+
+  /* ───────────────────────── NOT-FOUND HANDLING ─────────────────────── */
+  if ( !email )
+  {
+    showErrorMessage ( dispatch, errorMessages.MAIL_NOT_FOUND );
+    navigate ( -1 );
+    return null;
+  }
+
+  /* ───────────────────────────── JSX ───────────────────────────── */
   return (
     <div className = "min-h-screen bg-gradient-to-br from-blue-100 to-indigo-300 p-6" >
 
@@ -52,12 +85,16 @@ export default function EmailView ()
       >
         <span className = "absolute inset-x-0 top-0 h-1 bg-indigo-500" />
 
+        {/* -------------- HEADER -------------- */}
         <div className = "flex items-center mb-5 justify-between px-8 pt-8" >
 
             <Button
-              className = "p-2 rounded-xl bg-indigo-100 hover:bg-indigo-500 shadow-md hover:shadow-lg transition"
+              className = "group p-2 rounded-xl bg-indigo-100 hover:bg-indigo-500 shadow-md hover:shadow-lg transition"
               buttonText = {
-                <ArrowBigLeft className = "w-5 h-5 text-indigo-700 hover:text-white" size = { 22 } />
+                <div className = "flex items-center gap-2 text-indigo-700 group-hover:text-white transition-colors" >
+                  <ArrowBigLeft className = "w-5 h-5" size = { 22 } />
+                  <span > Back to { folder } </span>
+                </div>
               }
               onClick = { () => navigate ( "/landing-page" ) }
             />
@@ -77,34 +114,35 @@ export default function EmailView ()
 
         </div>
 
+        {/* -------------- META -------------- */}
         <div className = "px-20 py-10 space-y-6" >
 
           <div className = "grid sm:grid-cols-3 gap-4 font-medium text-lg text-gray-600" >
 
             <div className = "flex items-center gap-2" >
               <AtSign className = "w-6 h-6 text-indigo-500" />
-              <span className = "underline font-medium" > { email.from } </span>
+              <span className = "underline font-medium" > { email.senderEmail } </span>
             </div>
 
             <div className = "flex items-center gap-2" >
               <User className = "w-6 h-6 text-indigo-500" />
-              <span> { email.to } </span>
+              <span> { email.receiverEmail } </span>
             </div>
 
             <div className = "flex items-center gap-2" >
               <Clock className = "w-6 h-6 text-indigo-500" />
-              <span> { formatDate ( email.time, "full" ) } </span>
+              <span> { formatDate ( email.timestamp, "full" ) } </span>
             </div>
 
           </div>
 
+          {/* -------------- BODY -------------- */}
           <article
             className = "prose prose-indigo max-w-none text-md text-gray-700"
             dangerouslySetInnerHTML = { { __html: email.body } }
           />
 
-          {/* Attachments Section */}
-
+          {/* -------------- ATTACHMENTS -------------- */}
           <section>
 
             <h3
@@ -117,7 +155,8 @@ export default function EmailView ()
               {
                 email.attachments.map (
                   ( file ) => {
-                  const Icon = attachmentIcons[file.type] ?? FileText;
+                  const extension = file.name.split ( '.' ).pop ().toLowerCase ();
+                  const Icon = attachmentIcons[ extension ] || attachmentIcons.default;
                   return (
                     <div
                       key = { file.name }
@@ -130,7 +169,7 @@ export default function EmailView ()
 
                         <p className = "text-sm font-medium text-gray-900" > { file.name } </p>
 
-                        <p className = "text-sm text-gray-700 mb-5" > { file.size } </p>
+                        <p className = "text-sm text-gray-700 mb-5" > { ( file.size / 1024 ).toFixed ( 1 ) } KB </p>
 
                         <a
                           href = { file.url }

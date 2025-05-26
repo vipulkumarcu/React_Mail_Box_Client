@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import database from "../AppwriteServices/Database";
-import { loadData } from "../Features/MailSlice";
+import { loadData, selectLoaded } from "../Features/MailSlice";
 import { hideLoader, showLoader } from "../Features/LoaderSlice";
-import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
+import { errorMessages } from "../Helpers/HelperAlertMessages";
 import { showErrorMessage, showSuccessMessage } from "../Helpers/HelperAlertFunctions";
 import { formatEmailData } from "../Helpers/HelperTableFunctions";
 import InboxJSON from "../Data/Inbox.json";
@@ -16,12 +16,16 @@ function LandingPage ()
   /* ──────────────────── HOOK ──────────────────── */
   const dispatch = useDispatch ();
 
+  const alreadyLoaded = useSelector ( selectLoaded );
+
   /* ──────────────────── LOCAL STORAGE ──────────────────── */
   const userId = localStorage.getItem ( "userId" );
 
   /* ──────────────────── USEEFFECT TO FETCH EMAILS ──────────────────── */
   useEffect (
     () => {
+      if ( alreadyLoaded ) return;
+
       let cancelled = false; // protects against setState on unmount
 
       async function fetchEmails ()
@@ -103,7 +107,7 @@ function LandingPage ()
         cancelled = true;
       };
 
-    }, [ dispatch, userId ]
+    }, [ alreadyLoaded, dispatch, userId ]
   );
 
   /* ───────────────────────── JSX ───────────────────────── */
