@@ -7,12 +7,12 @@ export function tableHeadings ( folder )
 
   if  ( [ "Sent", "Drafts" ].includes ( folder ) )
   {
-    return headings = headings.filter ( heading => heading !== "From" && heading !== "Mail" );
+    return headings = headings.filter ( heading => heading !== "From" && heading !== "Mail" && heading !== "  " );
   }
 
   else if ( [ "Inbox", "Spam" ].includes ( folder ) )
   {
-    return headings = headings.filter ( heading => heading !== "To" && heading !== "Mail" );
+    return headings = headings.filter ( heading => heading !== "To" && heading !== "Mail" && heading !== "  " );
   }
 
   else if ( [ "Trash" ].includes ( folder ) )
@@ -53,19 +53,44 @@ export function formatDate ( date, type )
 export function formatEmailData ( rawObj )
 {
   return Object.values ( rawObj ).map (
-    ( e ) => (
+    ( event ) => (
       {
-        id:           e.id,
-        isRead:       e.is_read,
-        receivedDate: e.received_date,
-        sentDate:     e.sent_date,
-        from:         e.sender_name,
-        to:           e.receiver_name,
-        emailId:      e.email_id,
-        subject:      e.email_subject,
-        message:      e.message,
-        attachments:  e.attachment_count,
+        $id: event.$id,
+        timestamp: event.timestamp,
+        subject: event.subject,
+        body: event.body,
+        senderName: event.senderName,
+        senderEmail:event.senderEmail,
+        receiverName: event.receiverName,
+        receiverEmail: event.receiverEmail,
+        attachments: event.attachments,
+        isRead: event.isRead,
       }
     )
   );
+}
+
+//----------Email Contact To Display----------
+export function getDisplayContact ( email, folder )
+{
+  const effectiveFolder = folder === "Trash"
+    ? email.originalFolder || "Inbox"   // default to Inbox viewpoint
+    : folder;
+
+  const isInbox = effectiveFolder === "Inbox";
+  const isSent  = effectiveFolder === "Sent";
+
+  const displayName = isInbox || isSent
+    ? isInbox
+      ? email.senderName
+      : email.receiverName
+    : email.senderName || email.receiverName;
+
+  const displayEmail = isInbox || isSent
+    ? isInbox
+      ? email.senderEmail
+      : email.receiverEmail
+    : email.senderEmail || email.receiverEmail;
+
+  return { displayName, displayEmail };
 }

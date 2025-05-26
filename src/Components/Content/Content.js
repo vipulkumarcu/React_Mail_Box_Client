@@ -59,7 +59,6 @@ function Content ()
           ? (
             <>
               <Table emails = { emails } folder = { folder } />
-              {/* <Table emails = { pageEmails } folderLabel = { folderLabel } onDelete = { handleDelete } /> */}
               <div className = "flex items-center justify-between px-8 py-4 bg-white" >
 
                 <Button

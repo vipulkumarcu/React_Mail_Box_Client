@@ -43,15 +43,39 @@ const mailSlice = createSlice (
 
       /* move email to Trash (from Inbox or Sent) */
       addToTrash: ( state, { payload } ) => {
-        const { $id } = payload;
+        const { $id, folder: sourceFolder } = payload;
 
-        /* update and push to trash */
-        payload.folder = "Trash";
-        state.trash.unshift ( payload )
+        /* 1. remove from its current folder */
+        state[ sourceFolder.toLowerCase () ] = state[ sourceFolder.toLowerCase () ].filter ( ( mail ) => mail.$id !== $id );
 
-        /* remove from the specific folder */
-        state[ payload.folder.toLowerCase () ] = state[ payload.folder.toLowerCase () ].filter (
-          ( mail ) => mail.$id !== $id )
+        /* 2. create a NEW object for Trash so we don’t mutate original */
+        const trashedMail = {
+          ...payload,
+          originalFolder: sourceFolder,  // remember where it came from
+          folder: "Trash",
+        };
+
+        /* 3. Push to trash */
+        state.trash.unshift ( trashedMail )
+      },
+
+      /* restore email from Trash */
+      undoFromTrash: ( state, { payload } ) => {
+        const { $id, originalFolder } = payload;
+
+        // 1. Remove from Trash
+        state.trash = state.trash.filter ( ( mail) => mail.$id !== $id );
+
+        // 2. Restore to original folder if it exists
+        if ( originalFolder && state[ originalFolder.toLowerCase () ] )
+        {
+          const restoredMail = {
+            ...payload,
+            folder: originalFolder,
+          };
+          delete restoredMail.originalFolder; // clean up
+          state[ originalFolder.toLowerCase () ].unshift ( restoredMail );
+        }
       },
 
       /* remove permanently */
@@ -85,7 +109,7 @@ const mailSlice = createSlice (
 
 
 /* ---------- actions ---------- */
-export const { loadData, addToInbox, addToSent, addToTrash, removeFromInbox, removeFromSent, removeFromTrash, setFolder, setFilter, setCurrentPage, } = mailSlice.actions;
+export const { loadData, addToInbox, addToSent, addToTrash, undoFromTrash, removeFromInbox, removeFromSent, removeFromTrash, setFolder, setFilter, setCurrentPage, } = mailSlice.actions;
 
 
 /* ---------- selectors ---------- */

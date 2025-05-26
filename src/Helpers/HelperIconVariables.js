@@ -1,4 +1,4 @@
-import { Send, FileText, Star, Archive, Inbox, MessageSquareWarning, Trash2, Calendar, Trash, MailCheck, AtSign, Image, FileArchive, FileAudio, FileVideo, FileSpreadsheet, } from "lucide-react";
+import { Send, FileText, Star, Archive, Inbox, MessageSquareWarning, Trash2, Calendar, Trash, MailCheck, AtSign, Image, FileArchive, FileAudio, FileVideo, FileSpreadsheet, ArchiveRestore, } from "lucide-react";
 
 
 //----------Content && Sidebar----------
@@ -21,6 +21,7 @@ export const headingIconMap = {
   To: <AtSign size = { 20 } />,
   Mail: <AtSign size = { 20 } />,
   Subject: <FileText size = { 20 } />,
+  "  ": <ArchiveRestore size = { 20 } />,
   " ": <Trash size = { 20 } />,
 }
 
