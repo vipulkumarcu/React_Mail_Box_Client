@@ -3,10 +3,10 @@ import { MailOpen, Clock, Paperclip, Download, ArrowBigLeft, Shredder, AtSign, U
 import { formatDate } from "../Helpers/HelperTableFunctions";
 import { attachmentIcons } from "../Helpers/HelperIconVariables";
 import { Button } from "../Components";
-import { mailViewed, addToTrash, selectEmailById } from "../Features/MailSlice";
+import { mailViewed, addToTrash, selectEmailById, removeFromTrash } from "../Features/MailSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { showErrorMessage } from "../Helpers/HelperAlertFunctions";
+import { showErrorMessage, showSuccessMessage } from "../Helpers/HelperAlertFunctions";
 import { errorMessages } from "../Helpers/HelperAlertMessages";
 import database from "../AppwriteServices/Database";
 
@@ -76,6 +76,66 @@ export default function EmailView ()
     return null;
   }
 
+  /* ───────────────────────── ADD-TO-TRASH HANDLER ───────────────────── */
+  async function addToTrashHandler ( event, email )
+  {
+    event.stopPropagation ();
+
+    try
+    {
+      const response = await database.moveToTrash ( email.$id );
+
+      dispatch ( addToTrash ( { ...email, folder } ) );               // Currently because API is not being used
+      navigate ( -1 );
+
+      if ( !response.status )
+      {
+        showErrorMessage ( dispatch, response.message );
+        return;
+      }
+
+      // dispatch ( addToTrash ( { ...email, folder } ) );
+      // navigate ( -1 );
+      showSuccessMessage ( dispatch, response.message );
+    }
+
+    catch ( error )
+    {
+      showErrorMessage (
+        dispatch,
+        errorMessages[ error.type?.toUpperCase() ] || error.message || errorMessages.DEFAULT
+      );
+    }
+  }
+
+  /* ───────────────────────── PERMANENT DELETE ──────────────────────── */
+  async function removeFromTrashHandler ( event, id )
+  {
+    event.stopPropagation ();
+    try
+    {
+      const response = await database.deleteEmail ( id );
+
+      dispatch ( removeFromTrash ( id ) );                        // Currently because API is not being used
+      navigate ( -1 );
+
+      if ( !response.status )
+      {
+        showErrorMessage ( dispatch, response.message );
+        return;
+      }
+
+      // dispatch ( removeFromTrash ( id ) );
+      // navigate ( -1 );
+      showSuccessMessage ( dispatch, response.message );
+    }
+
+    catch ( error )
+    {
+      showErrorMessage ( dispatch, error.message || errorMessages.DEFAULT );
+    }
+  }
+
   /* ───────────────────────────── JSX ───────────────────────────── */
   return (
     <div className = "min-h-screen bg-gradient-to-br from-blue-100 to-indigo-300 p-6" >
@@ -111,7 +171,12 @@ export default function EmailView ()
               buttonText = {
                 <Shredder className = "w-5 h-5 text-red-600" size = { 22 } />
               }
-              onClick = { () => dispatch ( addToTrash ( email ) ) }
+              onClick = {
+                ( event ) => {
+                  if ( folder === "Trash" ) removeFromTrashHandler ( event, email.$id );
+                  else addToTrashHandler ( event, email );
+                }
+              }
             />
 
         </div>

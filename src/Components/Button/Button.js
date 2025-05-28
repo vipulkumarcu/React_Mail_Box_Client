@@ -10,7 +10,10 @@ function Button (
   return (
     <button
       type = { type }
-      className = { className }
+      className = { `
+        ${ className }
+        ${ props.disabled ? "opacity-50 cursor-not-allowed" : "" }
+      ` }
       { ...props }
     >
       { buttonText }
