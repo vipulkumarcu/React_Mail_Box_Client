@@ -24,7 +24,7 @@ function ComposeEmail ()
 
   /* ───────────────────────── HOOKS ───────────────────────── */
   const navigate = useNavigate ();
-  const { sendMail } = useEmails;
+  const { sendMail } = useEmails ();
 
   /* ───────────────────────── ADD MULTIPLE ATTACHMENTS ───────────────────────── */
   function handleFileChange ( event )
@@ -47,8 +47,8 @@ function ComposeEmail ()
     if ( isSuccess )
     {
       setTo ( "" );
-      setCc ( "" );
-      setBcc ( "" );
+      setCc ( [] );
+      setBcc ( [] );
       setSubject ( "" );
       setEmailMessage ( "" );
       setAttachments ( [] );

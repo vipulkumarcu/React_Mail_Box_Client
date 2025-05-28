@@ -37,7 +37,7 @@ export default function EmailView ()
     () => {
       if ( !email || email.isRead || folder !== "Inbox" ) return;
 
-      markRead ( id );
+      markRead ( id, folder );
 
     }, [ email, id, folder, markRead, dispatch ]
   );

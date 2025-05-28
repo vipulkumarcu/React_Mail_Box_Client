@@ -4,7 +4,7 @@ import database from "../AppwriteServices/Database";
 import { formatEmailData } from "../Helpers/HelperTableFunctions";
 import { showErrorMessage, showSuccessMessage } from "../Helpers/HelperAlertFunctions";
 import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
-import { addToSent, addToTrash, loadData, mailViewed, removeFromTrash } from "../Features/MailSlice";
+import { addToSent, addToTrash, loadData, mailViewed, removeFromTrash, undoFromTrash } from "../Features/MailSlice";
 import InboxJSON from "../Data/Inbox.json";
 import SentJSON  from "../Data/Sent.json";
 import TrashJSON from "../Data/Trash.json";
@@ -23,19 +23,19 @@ export function useEmails ()
     if ( !to.trim () || !toName.trim () )
     {
       showErrorMessage ( dispatch, errorMessages.EMPTY_RECIPIENTS );
-      return;
+      return false;
     }
 
     if ( !subject )
     {
       showErrorMessage ( dispatch, errorMessages.EMPTY_SUBJECT );
-      return;
+      return false;
     }
 
     if ( !emailMessage )
     {
       showErrorMessage ( dispatch, errorMessages.EMPTY_MESSAGE );
-      return;
+      return false;
     }
 
     /* ---------- 2. DISPLAY LOADER ---------- */
@@ -93,6 +93,8 @@ export function useEmails ()
 
       /* ---------- 6. UI FEEDBACK ---------- */
       showSuccessMessage ( dispatch, successMessages.EMAIL_SENT );
+
+      return true;
     }
 
     /* ---------- CATCHING ANY ERROR ---------- */
@@ -105,6 +107,8 @@ export function useEmails ()
           || error.message
           || errorMessages.DEFAULT
       );
+
+      return false;
     }
 
     /* ---------- HIDE LOADER ---------- */
@@ -255,7 +259,7 @@ export function useEmails ()
       const destination = email.originalFolder || "Inbox";
       const response  = await database.restoreEmail ( email.$id, destination );
 
-      dispatch ( restoreFromTrash ( email ) );                             // Currently because API is not being used
+      dispatch ( undoFromTrash ( email ) );                             // Currently because API is not being used
 
       if ( !response.status )
       {
