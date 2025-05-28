@@ -1,12 +1,6 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import authentication from "../AppwriteServices/Authentication";
-import { setUser } from "../Features/UserSlice";
-import { showLoader, hideLoader } from "../Features/LoaderSlice";
-import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
-import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
 import { Button, FormWrapper, InputBox } from "../Components";
+import { useAuthenticate } from "../Hooks/useAuthenticate";
 
 function Signup ()
 {
@@ -17,103 +11,24 @@ function Signup ()
   const [ password, setPassword ] = useState ( "" );
   const [ confirmPassword, setConfirmPassword ] = useState ( "" );
 
-  /* ───────────────────────── HOOKS ───────────────────────── */
-  const navigate = useNavigate ();
-  const dispatch = useDispatch ();
+  /* ───────────────────────── HOOK ───────────────────────── */
+  const { signup } = useAuthenticate ();
 
   /* ───────────────────────── SIGNUP HANDLER ───────────────────────── */
   async function signupHandler ( event )
   {
     event.preventDefault ();
 
-    /* ---------- 1. VALIDATION ---------- */
+    const isSuccess = await signup ( { firstName, lastName, email, password, confirmPassword, } );
 
-    if ( !firstName || !lastName || !email || !password || !confirmPassword )
+    if ( isSuccess )
     {
-      showErrorMessage ( dispatch, errorMessages.EMPTY_FIELDS );
-      return;
-    }
-
-    if ( password.length < 6 )
-    {
-      showErrorMessage ( dispatch, errorMessages.WEAK_PASSWORD );
-      return;
-    }
-
-    if ( password !== confirmPassword )
-    {
-      showErrorMessage ( dispatch, errorMessages.PASSWORDS_DO_NOT_MATCH );
-      return;
-    }
-
-    /* ---------- 2. DISPLAY LOADER ---------- */
-
-    dispatch ( showLoader () );
-
-    try
-    {
-      /* ---------- 3. SIGNUP USER AND REDIRECT ---------- */
-
-      const { status, message, data } = await authentication.signup ( email, password, `${firstName} ${lastName}` );
-
-      if ( !status )
-      {
-        showErrorMessage ( dispatch, message );
-        return;
-      }
-
-      const { user, session } = data;
-
-      navigate ( "/landing-page" );
-
-      /* ---------- 4. SAVE TO REDUX ---------- */
-
-      dispatch (
-        setUser (
-          {
-            userId   : user.$id,
-            userName : user.name,
-            userEmail: user.email,
-            sessionId: session.$id,
-            expiresIn: session.expire,
-          }
-        )
-      );
-
-      /* ---------- 5. UI FEEDBACK ---------- */
-
-      showSuccessMessage ( dispatch, successMessages.SIGNUP_SUCCESS, 1500 );
-
-      showSuccessMessage ( dispatch, successMessages.USER_CREATED, 1500 );
-
-      showInfoMessage ( dispatch, `Welcome aboard, ${ firstName } !` );
-
-      /* ---------- 6. RESET FORM ---------- */
-
+      // Reset form only if successful
       setFirstName ( "" );
       setLastName ( "" );
       setEmail ( "" );
       setPassword ( "" );
       setConfirmPassword ( "" );
-    }
-
-    /* ---------- CATCHING ANY ERROR ---------- */
-
-    catch ( error )
-    {
-      showErrorMessage (
-        dispatch,
-        errorMessages[ error.type?.toUpperCase () ]
-          || error.message
-          || errorMessages.DEFAULT
-      );
-    }
-
-    /* ---------- HIDE LOADER ---------- */
-
-    finally
-    {
-      dispatch ( hideLoader () );
     }
   }
 

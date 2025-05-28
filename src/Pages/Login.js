@@ -1,13 +1,6 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import authentication from "../AppwriteServices/Authentication";
-import { setUser } from "../Features/UserSlice";
-import { showLoader, hideLoader } from "../Features/LoaderSlice";
-import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
-import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
+import { useAuthenticate } from "../Hooks/useAuthenticate";
 import { Button, FormWrapper, InputBox } from "../Components";
-import { resetMailState } from "../Features/MailSlice";
 
 function Login ()
 {
@@ -16,100 +9,20 @@ function Login ()
   const [ password, setPassword ] = useState ( "" );
 
   /* ───────────────────────── HOOKS ───────────────────────── */
-  const navigate = useNavigate ();
-  const dispatch = useDispatch ();
+  const { login } = useAuthenticate ();
 
   /* ───────────────────────── LOGIN HANDLER ───────────────────────── */
   async function loginHandler ( event )
   {
     event.preventDefault ();
 
-    /* ---------- 1. VALIDATION ---------- */
+    const isSuccess = await login ( { email, password } );
 
-    if ( !email || !password )
+    if ( !isSuccess )
     {
-      showErrorMessage ( dispatch, errorMessages.EMPTY_FIELDS );
-      return;
-    }
-
-    /* ---------- 2. DISPLAY LOADER ---------- */
-
-    dispatch ( showLoader () );
-
-    try
-    {
-      /* ---------- 3. LOGIN USER AND REDIRECT ---------- */
-
-      const loginResponse = await authentication.login ( email, password );
-
-      if ( !loginResponse.status || !loginResponse.data )
-      {
-        showErrorMessage ( dispatch, loginResponse.message );
-        return;
-      }
-
-      const sessionData = loginResponse.data;
-
-      /* ---------- 4. FETCH USER DATA ---------- */
-
-      const userDataResponse = await authentication.getUserData ();
-
-      if ( !userDataResponse.status )
-      {
-        showErrorMessage ( dispatch, userDataResponse.message );
-        return;
-      }
-
-      const user = userDataResponse.data;
-
-      /* ---------- 3. STORE IN REDUX AND LOCAL STORAGE ---------- */
-
-      dispatch (
-        setUser (
-          {
-            userId   : user.$id,
-            userName : user.name,
-            userEmail: user.email,
-            sessionId: sessionData.$id,
-            expiresIn: sessionData.expire, // ISO string
-          }
-        )
-      );
-
-      /* ---------- 4. UI FEEDBACK ---------- */
-
-      showSuccessMessage ( dispatch, successMessages.LOGIN_SUCCESS, 1500 );
-
-      showInfoMessage ( dispatch, `Welcome back${ user.name ? `, ${ user.name }` : "" }!` );
-
-      /* ---------- 5. NAVIGATE ---------- */
-
-      dispatch ( resetMailState () );
-      navigate ( "/landing-page" );
-
-      /* ---------- 6. RESET FORM ---------- */
-
+      // Reset form only if successful
       setEmail ( "" );
       setPassword ( "" );
-    }
-
-    /* ---------- CATCHING ANY ERROR ---------- */
-
-    catch ( error )
-    {
-      showErrorMessage (
-        dispatch,
-        errorMessages[ error.type?.toUpperCase () ]
-          || error.message
-          || errorMessages.DEFAULT
-      );
-    }
-
-    /* ---------- HIDE LOADER ---------- */
-
-    finally
-    {
-      dispatch ( hideLoader () );
     }
 
   }

@@ -3,12 +3,12 @@ import { MailOpen, Clock, Paperclip, Download, ArrowBigLeft, Shredder, AtSign, U
 import { formatDate } from "../Helpers/HelperTableFunctions";
 import { attachmentIcons } from "../Helpers/HelperIconVariables";
 import { Button } from "../Components";
-import { mailViewed, addToTrash, selectEmailById, removeFromTrash } from "../Features/MailSlice";
+import { selectEmailById } from "../Features/MailSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { showErrorMessage, showSuccessMessage } from "../Helpers/HelperAlertFunctions";
+import { showErrorMessage } from "../Helpers/HelperAlertFunctions";
 import { errorMessages } from "../Helpers/HelperAlertMessages";
-import database from "../AppwriteServices/Database";
+import { useEmails } from "../Hooks/useEmails";
 
 export default function EmailView ()
 {
@@ -19,6 +19,7 @@ export default function EmailView ()
   const { folder, id } = useParams ();
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
+  const { markRead, moveToTrash, deleteFromTrash } = useEmails ();
 
   const email = useSelector ( ( state ) => selectEmailById ( state, id ) );
 
@@ -36,36 +37,9 @@ export default function EmailView ()
     () => {
       if ( !email || email.isRead || folder !== "Inbox" ) return;
 
-      (
-        async () => {
-          try
-          {
-            const response = await database.markAsRead ( id );
+      markRead ( id );
 
-            dispatch ( mailViewed ( { $id: id, folder } ) );        // Currently because API is not being used
-
-            if ( !response.status ) {
-              showErrorMessage ( dispatch, response.message );
-              return;
-            }
-
-            // dispatch ( mailViewed ( { $id: id, folder } ) );
-          }
-
-          catch ( error )
-          {
-            showErrorMessage (
-              dispatch,
-              errorMessages[ error.type?.toUpperCase () ]
-                || error.message
-                || errorMessages.DEFAULT
-            );
-          }
-        }
-      )
-
-      ();
-    }, [ email, id, folder, dispatch ]
+    }, [ email, id, folder, markRead, dispatch ]
   );
 
   /* ───────────────────────── NOT-FOUND HANDLING ─────────────────────── */
@@ -74,66 +48,6 @@ export default function EmailView ()
     showErrorMessage ( dispatch, errorMessages.MAIL_NOT_FOUND );
     navigate ( -1 );
     return null;
-  }
-
-  /* ───────────────────────── ADD-TO-TRASH HANDLER ───────────────────── */
-  async function addToTrashHandler ( event, email )
-  {
-    event.stopPropagation ();
-
-    try
-    {
-      const response = await database.moveToTrash ( email.$id );
-
-      dispatch ( addToTrash ( { ...email, folder } ) );               // Currently because API is not being used
-      navigate ( -1 );
-
-      if ( !response.status )
-      {
-        showErrorMessage ( dispatch, response.message );
-        return;
-      }
-
-      // dispatch ( addToTrash ( { ...email, folder } ) );
-      // navigate ( -1 );
-      showSuccessMessage ( dispatch, response.message );
-    }
-
-    catch ( error )
-    {
-      showErrorMessage (
-        dispatch,
-        errorMessages[ error.type?.toUpperCase() ] || error.message || errorMessages.DEFAULT
-      );
-    }
-  }
-
-  /* ───────────────────────── PERMANENT DELETE ──────────────────────── */
-  async function removeFromTrashHandler ( event, id )
-  {
-    event.stopPropagation ();
-    try
-    {
-      const response = await database.deleteEmail ( id );
-
-      dispatch ( removeFromTrash ( id ) );                        // Currently because API is not being used
-      navigate ( -1 );
-
-      if ( !response.status )
-      {
-        showErrorMessage ( dispatch, response.message );
-        return;
-      }
-
-      // dispatch ( removeFromTrash ( id ) );
-      // navigate ( -1 );
-      showSuccessMessage ( dispatch, response.message );
-    }
-
-    catch ( error )
-    {
-      showErrorMessage ( dispatch, error.message || errorMessages.DEFAULT );
-    }
   }
 
   /* ───────────────────────────── JSX ───────────────────────────── */
@@ -173,8 +87,9 @@ export default function EmailView ()
               }
               onClick = {
                 ( event ) => {
-                  if ( folder === "Trash" ) removeFromTrashHandler ( event, email.$id );
-                  else addToTrashHandler ( event, email );
+                  event.stopPropagation ();
+                  if ( folder === "Trash" ) deleteFromTrash ( email.$id, true );
+                  else moveToTrash ( email, folder, true );
                 }
               }
             />

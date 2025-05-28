@@ -1,15 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import database from "../AppwriteServices/Database";
-import file from "../AppwriteServices/File";
-import { hideLoader, showLoader } from "../Features/LoaderSlice";
-import { addToSent } from "../Features/MailSlice";
-import { showErrorMessage, showSuccessMessage } from "../Helpers/HelperAlertFunctions";
-import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
 import { attachmentIcons } from "../Helpers/HelperIconVariables";
 import { Paperclip, SendHorizonal, MailX, PlusCircle, MinusCircle, MailIcon, X } from "lucide-react";
 import { EmailInput, InputBox, Button, TextEditor } from "../Components";
+import { useEmails } from "../Hooks/useEmails";
 
 function ComposeEmail ()
 {
@@ -30,7 +24,7 @@ function ComposeEmail ()
 
   /* ───────────────────────── HOOKS ───────────────────────── */
   const navigate = useNavigate ();
-  const dispatch = useDispatch ();
+  const { sendMail } = useEmails;
 
   /* ───────────────────────── ADD MULTIPLE ATTACHMENTS ───────────────────────── */
   function handleFileChange ( event )
@@ -48,108 +42,16 @@ function ComposeEmail ()
   {
     event.preventDefault();
 
-    /* ---------- 1. VALIDATION ---------- */
+    const isSuccess = await sendMail ( to, toName, subject, emailMessage, attachments, cc, bcc, senderEmail, ownerId, senderName );
 
-    if ( !to.trim () || !toName.trim () )
+    if ( isSuccess )
     {
-      showErrorMessage ( dispatch, errorMessages.EMPTY_RECIPIENTS );
-      return;
-    }
-
-    if ( !subject )
-    {
-      showErrorMessage ( dispatch, errorMessages.EMPTY_SUBJECT );
-      return;
-    }
-
-    if ( !emailMessage )
-    {
-      showErrorMessage ( dispatch, errorMessages.EMPTY_MESSAGE );
-      return;
-    }
-
-    /* ---------- 2. DISPLAY LOADER ---------- */
-
-    dispatch ( showLoader () );
-
-    try
-    {
-      /* ---------- 3. UPLOAD ATTACHMENTS ---------- */
-
-      let uploadedAttachments = [];
-
-      if ( attachments.length )
-      {
-        const uploadResponse = await file.uploadFiles ( attachments );
-
-        if ( !uploadResponse.status )
-        {
-          showErrorMessage ( dispatch, uploadResponse.message );
-          return;
-        }
-
-        uploadedAttachments = uploadResponse.data.map ( ( file ) => file.$id );
-      }
-
-      /* ---------- 4. SEND EMAIL AND REDIRECT ---------- */
-
-      const { status, message, data } = await database.sendEmail (
-        {
-          ownerId: ownerId,
-          subject: subject,
-          body: emailMessage,
-          timestamp: new Date ().toISOString (),
-          attachments: uploadedAttachments,
-          senderName: senderName,
-          senderEmail: senderEmail,
-          receiverName: toName,
-          receiverEmail: to,
-          cc: cc,
-          bcc: bcc,
-        }
-      );
-
-      if ( !status )
-      {
-        showErrorMessage ( dispatch, message );
-        return;
-      }
-
-      navigate ( "/landing-page" );
-
-      /* ---------- 5. SAVE TO REDUX ---------- */
-
-      dispatch ( addToSent ( data ) );
-
-      /* ---------- 6. UI FEEDBACK ---------- */
-      showSuccessMessage ( dispatch, successMessages.EMAIL_SENT );
-
-      /* ---------- 7. RESET FORM ---------- */
       setTo ( "" );
       setCc ( "" );
       setBcc ( "" );
       setSubject ( "" );
       setEmailMessage ( "" );
       setAttachments ( [] );
-    }
-
-    /* ---------- CATCHING ANY ERROR ---------- */
-
-    catch ( error )
-    {
-      showErrorMessage (
-        dispatch,
-        errorMessages[ error.type?.toUpperCase () ]
-          || error.message
-          || errorMessages.DEFAULT
-      );
-    }
-
-    /* ---------- HIDE LOADER ---------- */
-
-    finally
-    {
-      dispatch ( hideLoader () );
     }
   };
 

@@ -1,32 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { clearUser } from "../../Features/UserSlice";
 import { setFilter } from "../../Features/MailSlice";
-import { successMessages } from "../../Helpers/HelperAlertMessages";
-import { showSuccessMessage } from "../../Helpers/HelperAlertFunctions";
 import { CircleUserRound, LogOut, MailSearch, UserRoundPen } from "lucide-react";
 import Button from "../Button/Button";
-import authentication from "../../AppwriteServices/Authentication";
+import { useAuthenticate } from "../../Hooks/useAuthenticate";
 
 function Topbar ()
 {
+  /* ───────────────────────── STATES ───────────────────────── */
   const [ open, setOpen ] = useState ( false );
 
+  /* ───────────────────────── REDUX ───────────────────────── */
   const filter = useSelector ( ( state ) => state.mail.filter );
   const userName = useSelector ( ( state ) => state.user.userName );
 
+  /* ───────────────────────── HOOKS ───────────────────────── */
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
+  const { logout } = useAuthenticate;
 
-  async function logout ()
-  {
-    await authentication.logout ();
-    dispatch ( clearUser () );
-    navigate ( "/" );
-    showSuccessMessage ( dispatch, successMessages.LOGOUT_SUCCESS );
-  };
-
+  /* ───────────────────────── JSX ───────────────────────── */
   return (
     <header
       className = "flex items-center justify-between px-6 py-4 bg-gradient-to-br from-indigo-200 to-purple-200 shadow-sm"
