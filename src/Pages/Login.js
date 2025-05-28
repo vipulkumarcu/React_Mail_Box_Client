@@ -7,6 +7,7 @@ import { showLoader, hideLoader } from "../Features/LoaderSlice";
 import { showSuccessMessage, showInfoMessage, showErrorMessage } from "../Helpers/HelperAlertFunctions";
 import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
 import { Button, FormWrapper, InputBox } from "../Components";
+import { resetMailState } from "../Features/MailSlice";
 
 function Login ()
 {
@@ -49,8 +50,6 @@ function Login ()
 
       const sessionData = loginResponse.data;
 
-      navigate ( "/landing-page" );
-
       /* ---------- 4. FETCH USER DATA ---------- */
 
       const userDataResponse = await authentication.getUserData ();
@@ -83,7 +82,12 @@ function Login ()
 
       showInfoMessage ( dispatch, `Welcome back${ user.name ? `, ${ user.name }` : "" }!` );
 
-      /* ---------- 5. RESET FORM ---------- */
+      /* ---------- 5. NAVIGATE ---------- */
+
+      dispatch ( resetMailState () );
+      navigate ( "/landing-page" );
+
+      /* ---------- 6. RESET FORM ---------- */
 
       setEmail ( "" );
       setPassword ( "" );

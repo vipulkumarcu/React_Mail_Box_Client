@@ -7,7 +7,7 @@ export function showSuccessMessage ( dispatch, message, duration )
       {
         type: "success",
         message: message,
-        duration: duration || 3000,
+        duration: duration || 2000,
       }
     )
   );
@@ -20,7 +20,7 @@ export function showErrorMessage ( dispatch, message, duration )
       {
         type: "error",
         message: message,
-        duration: duration || 3000,
+        duration: duration || 2000,
       }
     )
   );
@@ -33,7 +33,7 @@ export function showInfoMessage ( dispatch, message, duration )
       {
         type: "info",
         message: message,
-        duration: duration || 3000,
+        duration: duration || 2000,
       }
     )
   );

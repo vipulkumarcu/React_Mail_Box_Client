@@ -24,7 +24,7 @@ function LandingPage ()
   /* ──────────────────── USEEFFECT TO FETCH EMAILS ──────────────────── */
   useEffect (
     () => {
-      if ( alreadyLoaded ) return;
+      if ( !userId || alreadyLoaded ) return;
 
       let cancelled = false; // protects against setState on unmount
 
@@ -46,16 +46,16 @@ function LandingPage ()
 
           /* ---------- 2. FORMAT DATA ( API or JSON ) ---------- */
 
-          const inbox = inboxResponse.status
-            ? formatEmailData ( inboxResponse.data )
+          const inbox = inboxResponse.status && inboxResponse.data.total > 0
+            ? formatEmailData ( inboxResponse.data.documents )
             : formatEmailData ( InboxJSON );
 
-          const sent = sentResponse.status
-            ? formatEmailData ( sentResponse.data )
+          const sent = sentResponse.status && sentResponse.data.total > 0
+            ? formatEmailData ( sentResponse.data.documents )
             : formatEmailData ( SentJSON );
 
-          const trash = trashResponse.status
-            ? formatEmailData ( trashResponse.data )
+          const trash = trashResponse.status && trashResponse.data.total > 0
+            ? formatEmailData ( trashResponse.data.documents )
             : formatEmailData ( TrashJSON );
 
           /* ---------- 3. STORE IN REDUX ---------- */

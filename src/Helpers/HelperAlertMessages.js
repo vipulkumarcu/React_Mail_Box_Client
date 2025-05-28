@@ -53,6 +53,7 @@ export const errorMessages = {
   MAIL_SEND_FAILED:              "Failed to send mail.",
   MAIL_NOT_FOUND:                "Mail not found.",
   MAIL_TRASH_FAILED:             "Failed to move mail to trash.",
+  MAIL_RESTORE_FAILED:           "Failed to restore mail.",
   MAIL_UPDATE_FAILED:            "Failed to update mail.",
   MAIL_DELETION_FAILED:          "Failed to delete mail.",
   GET_INBOX_FAILED:              "Failed to fetch inbox.",

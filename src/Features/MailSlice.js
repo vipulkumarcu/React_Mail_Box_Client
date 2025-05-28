@@ -66,43 +66,56 @@ const mailSlice = createSlice (
         state.sent.unshift ( payload )
       },
 
-      /* move email to Trash (from Inbox or Sent) */
+      //* move email to Trash (from Inbox or Sent) */
       addToTrash: ( state, { payload } ) => {
-        const { $id, folder: sourceFolder } = payload;
+        const { $id, folder: sourceFolder, isRead } = payload;
+        const folderKey = sourceFolder.toLowerCase ();
 
-        /* 1. remove from its current folder */
-        state[ sourceFolder.toLowerCase () ] = state[ sourceFolder.toLowerCase () ].filter ( ( mail ) => mail.$id !== $id );
+        // 1. Remove from current folder
+        state[folderKey] = state[folderKey].filter ( mail => mail.$id !== $id );
 
-        /* 2. update unread count */
-        if ( sourceFolder === "Inbox" ) state.unReadCount = Math.max ( 0, state.unReadCount - 1 );
+        // 2. Update unread count if moving unread mail from Inbox
+        if ( sourceFolder === "Inbox" && !isRead )
+        {
+          state.unReadCount = Math.max ( 0, state.unReadCount - 1 );
+        }
 
-        /* 3. create a NEW object for Trash so we don’t mutate original */
+        // 3. Create a new object for Trash
         const trashedMail = {
           ...payload,
-          originalFolder: sourceFolder,  // remember where it came from
+          originalFolder: sourceFolder, // remember original folder
           folder: "Trash",
         };
 
-        /* 4. Push to trash */
-        state.trash.unshift ( trashedMail )
+        // 4. Add to Trash
+        state.trash.unshift ( trashedMail );
       },
 
       /* restore email from Trash */
       undoFromTrash: ( state, { payload } ) => {
-        const { $id, originalFolder } = payload;
+        const { $id, originalFolder, isRead } = payload;
+        const folderKey = originalFolder?.toLowerCase ();
 
         // 1. Remove from Trash
-        state.trash = state.trash.filter ( ( mail) => mail.$id !== $id );
+        state.trash = state.trash.filter ( mail => mail.$id !== $id );
 
-        // 2. Restore to original folder if it exists
-        if ( originalFolder && state[ originalFolder.toLowerCase () ] )
+        // 2. Restore to original folder if valid
+        if ( originalFolder && state[ folderKey ] )
         {
           const restoredMail = {
             ...payload,
             folder: originalFolder,
           };
-          delete restoredMail.originalFolder; // clean up
-          state[ originalFolder.toLowerCase () ].unshift ( restoredMail );
+
+          // 3. Update unread count if restoring unread mail to Inbox
+          if ( originalFolder === "Inbox" && !isRead )
+          {
+            state.unReadCount++;
+          }
+
+          // 4. Clean up metadata and push back to original folder
+          delete restoredMail.originalFolder;
+          state[folderKey].unshift(restoredMail);
         }
       },
 
@@ -117,6 +130,13 @@ const mailSlice = createSlice (
 
       removeFromTrash: ( state, { payload } ) => {
         ( state.trash = state.trash.filter ( ( mail ) => mail.$id !== payload ) )
+      },
+
+      resetMailState: (state) => {
+        state.inbox  = [];
+        state.sent   = [];
+        state.trash  = [];
+        state.loaded = false;
       },
 
       /* UI state */
@@ -137,7 +157,7 @@ const mailSlice = createSlice (
 
 
 /* ---------- actions ---------- */
-export const { loadData, mailViewed, addToInbox, addToSent, addToTrash, undoFromTrash, removeFromInbox, removeFromSent, removeFromTrash, setFolder, setFilter, setCurrentPage, } = mailSlice.actions;
+export const { loadData, mailViewed, addToInbox, addToSent, addToTrash, undoFromTrash, removeFromInbox, removeFromSent, removeFromTrash, resetMailState, setFolder, setFilter, setCurrentPage, } = mailSlice.actions;
 
 
 /* ---------- selectors ---------- */

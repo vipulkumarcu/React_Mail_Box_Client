@@ -14,7 +14,7 @@ function Topbar ()
   const [ open, setOpen ] = useState ( false );
 
   const filter = useSelector ( ( state ) => state.mail.filter );
-  const displayName = useSelector ( ( state ) => state.user.displayName );
+  const userName = useSelector ( ( state ) => state.user.userName );
 
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
@@ -51,7 +51,7 @@ function Topbar ()
       <div className = "flex items-center gap-4 relative ml-4" >
 
         <span className = "text-indigo-600 text-2xl font-semibold" >
-          Welcome { displayName ? `, ${ displayName }` : "" }
+          Welcome { userName ? `, ${userName.split(" ")[0]}` : "" }
         </span>
 
         <button onClick = { () => setOpen ( ( p ) => !p ) } className = "group" >
