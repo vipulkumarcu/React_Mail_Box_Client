@@ -4,6 +4,9 @@ import { headingIconMap } from "../../Helpers/HelperIconVariables";
 import { formatDate, getDisplayContact, tableHeadings } from "../../Helpers/HelperTableFunctions";
 import { MailOpen, Shredder, Mail, Trash, ArchiveRestore } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import database from "../../AppwriteServices/Database";
+import { showErrorMessage, showSuccessMessage } from "../../Helpers/HelperAlertFunctions";
+import { errorMessages } from "../../Helpers/HelperAlertMessages";
 
 function Table ( { emails, folder } )
 {
@@ -20,6 +23,93 @@ function Table ( { emails, folder } )
   const gridTemplate = isTrash
     ? "grid-cols-[70px_160px_3fr_4fr_70px_70px]"
     : "grid-cols-[70px_160px_3fr_4fr_70px]";
+
+  /* ─────────── HANDLERS ─────────── */
+
+  // INBOX / SENT ➜ TRASH
+  async function addToTrashHandler ( event, email )
+  {
+    event.stopPropagation ();
+
+    try
+    {
+      const response = await database.moveToTrash ( email.$id );
+
+      dispatch ( addToTrash ( { ...email, folder } ) );               // Currently because API is not being used
+
+      if ( !response.status )
+      {
+        showErrorMessage ( dispatch, response.message );
+        return;
+      }
+
+      // dispatch ( addToTrash ( { ...email, folder } ) );
+      showSuccessMessage ( dispatch, response.message );
+    }
+
+    catch ( error )
+    {
+      showErrorMessage (
+        dispatch,
+        errorMessages[ error.type?.toUpperCase() ] || error.message || errorMessages.DEFAULT
+      );
+    }
+  }
+
+  // TRASH ➜ ORIGINAL FOLDER
+  async function undoFromTrashHandler ( event, email )
+  {
+    event.stopPropagation ();
+
+    try
+    {
+      const destination = email.originalFolder || "Inbox";
+      const response  = await database.restoreEmail ( email.$id, destination );
+
+      dispatch ( undoFromTrash ( email ) );                             // Currently because API is not being used
+
+      if ( !response.status )
+      {
+        showErrorMessage ( dispatch, response.message );
+        return;
+      }
+
+      // dispatch ( undoFromTrash ( email ) );
+      showSuccessMessage ( dispatch, response.message );
+    }
+
+    catch ( error )
+    {
+      showErrorMessage ( dispatch, error.message || errorMessages.DEFAULT );
+    }
+  }
+
+  // PERMANENT DELETE (Trash only)
+  async function removeFromTrashHandler ( event, id )
+  {
+    event.stopPropagation ();
+    try
+    {
+      const response = await database.deleteEmail ( id );
+
+      dispatch ( removeFromTrash ( id ) );                        // Currently because API is not being used
+
+      if ( !response.status )
+      {
+        showErrorMessage ( dispatch, response.message );
+        return;
+      }
+
+      // dispatch ( removeFromTrash ( id ) );
+      showSuccessMessage ( dispatch, response.message );
+    }
+
+    catch ( error )
+    {
+      showErrorMessage ( dispatch, error.message || errorMessages.DEFAULT );
+    }
+  }
+
 
   /* ---------- JSX ---------- */
   return (
@@ -103,12 +193,7 @@ function Table ( { emails, folder } )
                           {/* Restore */}
                           <div className = "flex justify-center" >
                             <button
-                              onClick = {
-                                ( event ) => {
-                                  event.stopPropagation ();
-                                  dispatch ( undoFromTrash ( email ) );
-                                }
-                              }
+                              onClick = { ( event ) => undoFromTrashHandler ( event, email ) }
                               className = "text-indigo-600 hover:text-indigo-800"
                             >
                               <ArchiveRestore  size = { 20 } />
@@ -118,12 +203,7 @@ function Table ( { emails, folder } )
                           {/* Delete permanently */}
                           <div className = "flex justify-center" >
                             <button
-                              onClick = {
-                                ( event ) => {
-                                  event.stopPropagation ();
-                                  dispatch ( removeFromTrash ( email.$id ) );
-                                }
-                              }
+                              onClick = { ( event ) => removeFromTrashHandler ( event, email.$id ) }
                               className = "text-red-600 hover:text-red-800"
                             >
                               <Trash size = { 20 } />
@@ -136,12 +216,7 @@ function Table ( { emails, folder } )
                       /* Inbox / Sent: single move-to-trash button */
                       <div className="flex justify-center" >
                         <button
-                          onClick = {
-                            ( event ) => {
-                              event.stopPropagation ();
-                              dispatch ( addToTrash ( { ...email, folder } ) );
-                            }
-                          }
+                          onClick = { ( event ) => addToTrashHandler ( event, email ) }
                           className = "text-red-600 hover:text-red-800"
                         >
                           <Shredder size = { 20 } />

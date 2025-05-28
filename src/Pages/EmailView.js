@@ -34,18 +34,18 @@ export default function EmailView ()
   /* ──────────────────────── MARK-AS-READ EFFECT ─────────────────────── */
   useEffect (
     () => {
-      if ( !email || email.isRead ) return;
+      if ( !email || email.isRead || folder !== "Inbox" ) return;
 
       (
         async () => {
           try
           {
-            const res = await database.markAsRead ( id );
+            const response = await database.markAsRead ( id );
 
             dispatch ( mailViewed ( { $id: id, folder } ) );        // Currently because API is not being used
 
-            if ( !res.status ) {
-              showErrorMessage ( dispatch, res.message );
+            if ( !response.status ) {
+              showErrorMessage ( dispatch, response.message );
               return;
             }
 
@@ -54,9 +54,11 @@ export default function EmailView ()
 
           catch ( error )
           {
-            showErrorMessage(
+            showErrorMessage (
               dispatch,
-              error.message || errorMessages.DEFAULT
+              errorMessages[ error.type?.toUpperCase () ]
+                || error.message
+                || errorMessages.DEFAULT
             );
           }
         }

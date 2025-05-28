@@ -52,7 +52,8 @@ const mailSlice = createSlice (
         if ( mail && !mail.isRead )
         {
           mail.isRead = true;
-          state.unReadCount = Math.max ( 0, state.unReadCount - 1 ); // Count never goes below zero
+          // Count never goes below zero
+          if ( folder === "Inbox" ) state.unReadCount = Math.max ( 0, state.unReadCount - 1 );
         }
       },
 
@@ -72,14 +73,17 @@ const mailSlice = createSlice (
         /* 1. remove from its current folder */
         state[ sourceFolder.toLowerCase () ] = state[ sourceFolder.toLowerCase () ].filter ( ( mail ) => mail.$id !== $id );
 
-        /* 2. create a NEW object for Trash so we don’t mutate original */
+        /* 2. update unread count */
+        if ( sourceFolder === "Inbox" ) state.unReadCount = Math.max ( 0, state.unReadCount - 1 );
+
+        /* 3. create a NEW object for Trash so we don’t mutate original */
         const trashedMail = {
           ...payload,
           originalFolder: sourceFolder,  // remember where it came from
           folder: "Trash",
         };
 
-        /* 3. Push to trash */
+        /* 4. Push to trash */
         state.trash.unshift ( trashedMail )
       },
 

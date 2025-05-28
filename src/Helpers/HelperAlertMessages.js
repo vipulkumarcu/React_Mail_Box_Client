@@ -81,6 +81,7 @@ export const successMessages = {
   EMAIL_DELETED:       "Email deleted successfully.",
   EMAIL_MOVED_TO_TRASH:"Email moved to trash.",
   EMAIL_UPDATED:       "Email updated successfully.",
+  EMAIL_RESTORED:      "Email restored successfully.",
   GET_INBOX_SUCCESS:   "Inbox fetched successfully.",
   GET_SENT_SUCCESS:    "Sent emails fetched successfully.",
   GET_TRASH_SUCCESS:   "Trash emails fetched successfully.",

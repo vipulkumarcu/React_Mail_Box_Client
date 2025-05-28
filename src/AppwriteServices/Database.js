@@ -141,9 +141,7 @@ class Database
         appwriteDatabaseId,
         appwriteEmailsCollectionId,
         mailId,
-        {
-          folder: "Trash",
-        }
+        { folder: "Trash" }
       );
 
       /* --------------- Success --------------- */
@@ -169,9 +167,9 @@ class Database
   /* ─────────── DELETE EMAIL ─────────── */
   async deleteEmail ( mailId )
   {
-    /* --------------- Delete email document --------------- */
     try
     {
+      /* --------------- Delete email document --------------- */
       await this.databases.deleteDocument (
         appwriteDatabaseId,
         appwriteEmailsCollectionId,
@@ -194,6 +192,37 @@ class Database
         status: false,
         message: mapError ( error.type, "MAIL_DELETION_FAILED" ),
       }
+    }
+  }
+
+  /* ─────────── RESTORE EMAIL ( Trash → Inbox / Sent ) ─────────── */
+  async restoreEmail ( mailId, destinationFolder )
+  {
+    try
+    {
+      /* ------------ Restore email ------------ */
+      const updated = await this.databases.updateDocument (
+        appwriteDatabaseId,
+        appwriteEmailsCollectionId,
+        mailId,
+        { folder: destinationFolder }
+      );
+
+      return {
+        // const { status, message, data } = response;
+        status: true,
+        message: successMessages.EMAIL_RESTORED,
+        data: updated,
+      };
+    }
+
+    catch ( error )
+    {
+      return {
+        // const { status, message } = response;
+        status: false,
+        message: mapError ( error.type, "MAIL_RESTORE_FAILED" ),
+      };
     }
   }
 

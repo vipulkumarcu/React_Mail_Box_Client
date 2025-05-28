@@ -38,7 +38,7 @@ function Sidebar ( )
                     key === "Inbox" &&
                     <span
                       className = {
-                        `inline-flex ml-6 items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 rounded-full ${ key === active ? "bg-fuchsia-600" : "bg-fuchsia-700"}`
+                        `inline-flex ml-6 items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 rounded-full ${ key === active ? "bg-rose-600" : "bg-slate-800"}`
                       }
                     >
                       { unReadCount }

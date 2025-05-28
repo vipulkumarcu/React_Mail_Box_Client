@@ -44,7 +44,7 @@ function LandingPage ()
             ]
           );
 
-          /* ---------- 2. FORMAT DATA (API or JSON) ---------- */
+          /* ---------- 2. FORMAT DATA ( API or JSON ) ---------- */
 
           const inbox = inboxResponse.status
             ? formatEmailData ( inboxResponse.data )
