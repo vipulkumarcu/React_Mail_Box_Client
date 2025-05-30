@@ -10,25 +10,30 @@ const { appwriteEndpointUrl, appwriteProjectId } = EnvironmentVariables;
 // ─────────────────────  MAPPING ERROR CORRECTLY  ─────────────────────
 function mapError ( errorType, fallbackKey )
 {
-  if ( !errorType ) return errorMessages[ fallbackKey ] || errorMessages.DEFAULT;
+  if ( !errorType )
+    return errorMessages[ fallbackKey ] || errorMessages.DEFAULT;
 
   const key = errorType.toUpperCase();
 
-  return errorMessages[ key ] || errorMessages[ fallbackKey ] || errorMessages.DEFAULT;
+  return (
+    errorMessages[ key ] ||
+    errorMessages[ fallbackKey ] ||
+    errorMessages.DEFAULT
+  );
 }
 
 
 // ───────────────────── USER AUTHENTICATION  ─────────────────────
 class Authentication
 {
-  client = new Client ();
+  client  = new Client ();
   account;
 
   constructor ()
   {
     this.client
       .setEndpoint ( appwriteEndpointUrl )
-      .setProject ( appwriteProjectId );
+      .setProject  ( appwriteProjectId );
 
     this.account = new Account ( this.client );
   }
@@ -38,8 +43,22 @@ class Authentication
   {
     try
     {
+      /* ---------- Guard ---------- */
+      if ( !email || !password || !name )
+      {
+        return {
+          status : false,
+          message: errorMessages.SIGNUP_FALLBACK,
+        };
+      }
+
       /* --------------- 1. Create the user --------------- */
-      const userResponse = await this.account.create ( ID.unique (), email, password, name );
+      const userResponse = await this.account.create (
+        ID.unique (),
+        email,
+        password,
+        name
+      );
 
       /* --------------- 2. Auto-login the new user --------------- */
       const loginResponse = await this.login ( email, password );
@@ -47,22 +66,19 @@ class Authentication
       /* --------------- Error --------------- */
       if ( !loginResponse.status )
       {
-        // const { status, message } = response;
         return {
-          status: false,
+          status : false,
           message: loginResponse.message,
         };
       }
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        // const { user, session } = data;
-        status: true,
+        status : true,
         message: successMessages.SIGNUP_SUCCESS,
-        data: {
-          user: userResponse,                 // { $id: userId, name, email,... }
-          session: loginResponse.data         // { $id: sessionId, userId, expire,... }
+        data   : {
+          user   : userResponse,            // { $id, name, email, ... }
+          session: loginResponse.data,      // { $id, userId, expire, ... }
         },
       };
     }
@@ -70,9 +86,8 @@ class Authentication
     /* --------------- Catching any error --------------- */
     catch ( error )
     {
-      // const { status, message } = response;
       return {
-        status: false,
+        status : false,
         message: mapError ( error.type, "SIGNUP_FALLBACK" ),
       };
     }
@@ -83,24 +98,34 @@ class Authentication
   {
     try
     {
+      /* ---------- Guard ---------- */
+      if ( !email || !password )
+      {
+        return {
+          status : false,
+          message: errorMessages.LOGIN_FALLBACK,
+        };
+      }
+
       /* --------------- Create a session --------------- */
-      const sessionResponse = await this.account.createEmailPasswordSession ( email, password );
+      const sessionResponse = await this.account.createEmailPasswordSession (
+        email,
+        password
+      );
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.LOGIN_SUCCESS,
-        data: sessionResponse,      // { $id, userId, expire,...}
+        data   : sessionResponse,      // { $id, userId, expire, ... }
       };
     }
 
     /* --------------- Catching any error --------------- */
     catch ( error )
     {
-      // const { status, message } = response;
       return {
-        status: false,
+        status : false,
         message: mapError ( error.type, "LOGIN_FALLBACK" ),
       };
     }
@@ -116,19 +141,17 @@ class Authentication
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.GET_USER_SUCCESS,
-        data: userDataResponse,     // { $id: userId, name, email }
-      }
+        data   : userDataResponse,     // { $id, name, email }
+      };
     }
 
     /* --------------- Catching any error --------------- */
     catch ( error )
     {
-      // const { status, message } = response;
       return {
-        status: false,
+        status : false,
         message: mapError ( error.type, "GET_USER_FALLBACK" ),
       };
     }
@@ -144,8 +167,7 @@ class Authentication
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message } = response;
-        status: true,
+        status : true,
         message: successMessages.LOGOUT_SUCCESS,
       };
     }
@@ -154,8 +176,7 @@ class Authentication
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "LOGOUT_FALLBACK" ),
       };
     }
@@ -166,15 +187,25 @@ class Authentication
   {
     try
     {
+      /* ---------- Guard ---------- */
+      if ( !sessionId )
+      {
+        return {
+          status : false,
+          message: errorMessages.UPDATE_SESSION_FALLBACK,
+        };
+      }
+
       /* --------------- Update user session --------------- */
-      const newSessionResponse = await this.account.updateSession ( sessionId );
+      const newSessionResponse = await this.account.updateSession (
+        sessionId
+      );
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.TOKEN_REFRESHED,
-        data: newSessionResponse,      // { $id: sessionId, userId, expire,... }
+        data : newSessionResponse,   // { $id, userId, expire, ... }
       };
     }
 
@@ -182,8 +213,7 @@ class Authentication
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "UPDATE_SESSION_FALLBACK" ),
       };
     }

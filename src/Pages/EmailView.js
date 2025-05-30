@@ -9,17 +9,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import { showErrorMessage } from "../Helpers/HelperAlertFunctions";
 import { errorMessages } from "../Helpers/HelperAlertMessages";
 import { useEmails } from "../Hooks/useEmails";
+import { hideLoader, showLoader } from "../Features/LoaderSlice";
 
 export default function EmailView ()
 {
   /* ───────────────────────────── STATE ────────────────────────────── */
   const [ fadeIn, setFadeIn ] = useState ( false );
+  const [ attachments, setAttachments ] = useState ( [] );
 
   /* ───────────────────────────── HOOKS ────────────────────────────── */
   const { folder, id } = useParams ();
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
-  const { markRead, moveToTrash, deleteFromTrash } = useEmails ();
+  const { getAttachmentInfo, markRead, moveToTrash, deleteFromTrash } = useEmails ();
 
   const email = useSelector ( ( state ) => selectEmailById ( state, id ) );
 
@@ -40,6 +42,31 @@ export default function EmailView ()
       markRead ( id, folder );
 
     }, [ email, id, folder, markRead, dispatch ]
+  );
+
+  /* ───────────────────────── ATTACHMENTS ───────────────────────── */
+  useEffect (
+    () => {
+      if ( !email || !email.attachments?.length ) return;
+
+      dispatch ( showLoader () );
+
+      const fetchAttachmentInfo = async () =>
+      {
+        const updated = await Promise.all (
+          email.attachments.map ( ( fileId ) => getAttachmentInfo ( fileId ) )
+        );
+
+        setAttachments ( updated.filter ( Boolean ) );
+        dispatch ( hideLoader () );
+      };
+
+      fetchAttachmentInfo ();
+
+      // optional cleanup in case component unmounts mid-fetch
+      return () => dispatch ( hideLoader () );
+    },
+    [ email, dispatch, getAttachmentInfo ],
   );
 
   /* ───────────────────────── NOT-FOUND HANDLING ─────────────────────── */
@@ -101,9 +128,14 @@ export default function EmailView ()
 
           <div className = "grid sm:grid-cols-3 gap-4 font-medium text-lg text-gray-600" >
 
-            <div className = "flex items-center gap-2" >
-              <AtSign className = "w-6 h-6 text-indigo-500" />
-              <span className = "underline font-medium" > { email.senderEmail } </span>
+            <div className ="flex items-center gap-2">
+              <AtSign className ="w-6 h-6 text-indigo-500" />
+              <div className ="font-semibold">
+                From:
+              </div>
+              <div>
+                <span className ="underline font-medium"> { email.senderEmail } </span>
+              </div>
             </div>
 
             <div className = "flex items-center gap-2" >
@@ -135,13 +167,13 @@ export default function EmailView ()
 
             <div className = "grid sm:grid-cols-2 lg:grid-cols-5 gap-5" >
               {
-                email.attachments.map (
+                attachments.map (
                   ( file ) => {
                   const extension = file.name.split ( '.' ).pop ().toLowerCase ();
                   const Icon = attachmentIcons[ extension ] || attachmentIcons.default;
                   return (
                     <div
-                      key = { file.name }
+                      key = { file.$id }
                       className = "bg-gradient-to-r from-indigo-100 to-purple-100 backdrop-blur-md rounded-2xl shadow-xl p-3 flex gap-5 items-start border border-indigo-400/30 transition-all duration-300 hover:shadow-2xl hover:scale-[1.03]"
                     >
 
@@ -154,7 +186,7 @@ export default function EmailView ()
                         <p className = "text-sm text-gray-700 mb-5" > { ( file.size / 1024 ).toFixed ( 1 ) } KB </p>
 
                         <a
-                          href = { file.url }
+                          href = { file.downloadUrl }
                           download
                           className = "inline-flex items-center gap-3 text-base font-normal px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 hover:shadow-xl hover:scale-105"
                         >

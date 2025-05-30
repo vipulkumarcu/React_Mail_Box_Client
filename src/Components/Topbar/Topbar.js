@@ -18,7 +18,7 @@ function Topbar ()
   /* ───────────────────────── HOOKS ───────────────────────── */
   const navigate = useNavigate ();
   const dispatch = useDispatch ();
-  const { logout } = useAuthenticate;
+  const { logout } = useAuthenticate ();
 
   /* ───────────────────────── JSX ───────────────────────── */
   return (

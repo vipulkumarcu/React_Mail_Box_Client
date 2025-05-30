@@ -14,21 +14,23 @@ function mapError ( errorType, fallbackKey )
 
   const key = errorType.toUpperCase();
 
-  return errorMessages[ key ] || errorMessages[ fallbackKey ] || errorMessages.DEFAULT;
+  return (
+    errorMessages[ key ] || errorMessages[ fallbackKey ] || errorMessages.DEFAULT
+  );
 }
 
 
 // ───────────────────── DATABASE ─────────────────────
 class Database
 {
-  client = new Client ();
+  client   = new Client ();
   databases;
 
   constructor ()
   {
     this.client
       .setEndpoint ( appwriteEndpointUrl )
-      .setProject ( appwriteProjectId );
+      .setProject  ( appwriteProjectId );
 
     this.databases = new Databases ( this.client );
   }
@@ -54,6 +56,15 @@ class Database
   {
     try
     {
+      /* ---------- Guard against empty ownerId ---------- */
+      if ( !ownerId )
+      {
+        return {
+          status : true,
+          message: errorMessages.MAIL_SEND_FAILED,
+        };
+      }
+
       /* --------------- Create email document --------------- */
       const emailDoc = await this.databases.createDocument (
         appwriteDatabaseId,
@@ -65,7 +76,7 @@ class Database
           subject,
           body,
           timestamp,
-          attachments : attachments,
+          attachments,
           senderName,
           senderEmail,
           receiverName,
@@ -78,10 +89,9 @@ class Database
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.EMAIL_SENT,
-        data: emailDoc,
+        data : emailDoc,
       };
     }
 
@@ -89,14 +99,13 @@ class Database
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "MAIL_SEND_FAILED" ),
       };
     }
   }
 
-  /* ─────────── MOVE EMAIL TO TRASH ─────────── */
+  /* ─────────── MARK EMAIL AS READ ─────────── */
   async markAsRead ( mailId )
   {
     try
@@ -106,17 +115,14 @@ class Database
         appwriteDatabaseId,
         appwriteEmailsCollectionId,
         mailId,
-        {
-          isRead: true,
-        }
+        { isRead: true }
       );
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.EMAIL_UPDATED,
-        data: updatedEmailResponse,
+        data   : updatedEmailResponse,
       };
     }
 
@@ -124,10 +130,9 @@ class Database
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "MAIL_UPDATE_FAILED" ),
-      }
+      };
     }
   }
 
@@ -146,10 +151,9 @@ class Database
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.EMAIL_MOVED_TO_TRASH,
-        data: updatedEmailResponse,
+        data   : updatedEmailResponse,
       };
     }
 
@@ -157,10 +161,9 @@ class Database
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "MAIL_TRASH_FAILED" ),
-      }
+      };
     }
   }
 
@@ -178,8 +181,7 @@ class Database
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.EMAIL_DELETED,
       };
     }
@@ -188,15 +190,14 @@ class Database
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "MAIL_DELETION_FAILED" ),
-      }
+      };
     }
   }
 
   /* ─────────── RESTORE EMAIL ( Trash → Inbox / Sent ) ─────────── */
-  async restoreEmail ( mailId, destinationFolder )
+  async restoreEmail ( mailId, destinationFolder = "Inbox" )
   {
     try
     {
@@ -209,18 +210,16 @@ class Database
       );
 
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.EMAIL_RESTORED,
-        data: updated,
+        data   : updated,
       };
     }
 
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "MAIL_RESTORE_FAILED" ),
       };
     }
@@ -245,21 +244,19 @@ class Database
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.GET_INBOX_SUCCESS,
-        data: inboxResponse,
-      }
+        data   : inboxResponse,
+      };
     }
 
     /* --------------- Catching any error --------------- */
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "GET_INBOX_FAILED" ),
-      }
+      };
     }
   }
 
@@ -282,21 +279,19 @@ class Database
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.GET_SENT_SUCCESS,
-        data: sentResponse,
-      }
+        data   : sentResponse,
+      };
     }
 
     /* --------------- Catching any error --------------- */
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "GET_SENT_FAILED" ),
-      }
+      };
     }
   }
 
@@ -319,21 +314,19 @@ class Database
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.GET_TRASH_SUCCESS,
-        data: trashResponse,
-      }
+        data   : trashResponse,
+      };
     }
 
     /* --------------- Catching any error --------------- */
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "GET_TRASH_FAILED" ),
-      }
+      };
     }
   }
 }

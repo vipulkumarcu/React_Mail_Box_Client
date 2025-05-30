@@ -34,7 +34,9 @@ export const errorMessages = {
   STORAGE_QUOTA_EXCEEDED:        "Storage quota exceeded.",
   FILE_UPLOAD_FAILED:            "Failed to upload file.",
   FILE_DELETION_FAILED:          "Failed to delete file.",
-  FILE_URL_FAILED:               "Failed to generate file URL.",
+  FILE_META_FAILED:              "Failed to fetch file metadata.",
+  FILE_INFO_FAILED:              "Failed to fetch file info.",
+  EMPTY_FILES:                   "No files selected.",
 
   /* ── FORM-LEVEL & APP-LEVEL (manual) ─────────────────────────── */
   INVALID_EMAIL:                 "Invalid email address.",
@@ -88,9 +90,9 @@ export const successMessages = {
   GET_TRASH_SUCCESS:   "Trash emails fetched successfully.",
 
   /* STORAGE */
-  FILE_URL_GENERATED:  "File URL generated successfully.",
   FILE_UPLOADED:       "File uploaded successfully.",
   FILE_DELETED:        "File deleted successfully.",
+  FILE_META_FETCHED:   "File metadata fetched successfully.",
 
   /* FALLBACK */
   DEFAULT:             "Operation completed successfully.",

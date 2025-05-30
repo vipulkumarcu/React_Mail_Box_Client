@@ -10,12 +10,14 @@ import SentJSON  from "../Data/Sent.json";
 import TrashJSON from "../Data/Trash.json";
 import { useNavigate } from "react-router-dom";
 import file from "../AppwriteServices/File";
+import { useCallback } from "react";
 
 export function useEmails ()
 {
   const dispatch = useDispatch ();
   const navigate = useNavigate ();
 
+  /* --------------------------- SEND EMAIL -------------------------- */
   async function sendMail ( to, toName, subject, emailMessage, attachments, cc, bcc, senderEmail, ownerId, senderName )
   {
     /* ---------- 1. VALIDATION ---------- */
@@ -127,13 +129,13 @@ export function useEmails ()
 
     try
     {
-      /* ---------- 1. FETCH MAIL DATA ---------- */
+      /* ---------- 1. FETCH MAILS ---------- */
 
       const [ inboxResponse, sentResponse, trashResponse ] = await Promise.all (
         [
           database.getInboxEmails ( userId ),
           database.getSentEmails ( userId ),
-          database.getTrashEmails ( userId) ,
+          database.getTrashEmails ( userId ) ,
         ]
       );
 
@@ -151,6 +153,8 @@ export function useEmails ()
         ? formatEmailData ( trashResponse.data.documents )
         : formatEmailData ( TrashJSON );
 
+      console.log ( sentResponse );
+
       /* ---------- 3. STORE IN REDUX ---------- */
 
       if ( !signal?.aborted )
@@ -164,9 +168,9 @@ export function useEmails ()
       if ( !sentResponse.status ) showErrorMessage ( dispatch, sentResponse.message, 1500 );
       if ( !trashResponse.status ) showErrorMessage ( dispatch, trashResponse.message, 1500 );
 
-      if ( trashResponse.status ) showSuccessMessage ( dispatch, inboxResponse.message, 1500 );
-      if ( trashResponse.status ) showSuccessMessage ( dispatch, inboxResponse.message, 1500 );
-      if ( trashResponse.status ) showSuccessMessage ( dispatch, inboxResponse.message, 1500 );
+      if ( inboxResponse.status ) showSuccessMessage ( dispatch, inboxResponse.message, 1500 );
+      if ( sentResponse.status  ) showSuccessMessage ( dispatch, sentResponse.message , 1500 );
+      if ( trashResponse.status ) showSuccessMessage ( dispatch, trashResponse.message, 1500 );
     }
 
     /* ---------- CATCHING ANY ERROR ---------- */
@@ -191,6 +195,37 @@ export function useEmails ()
       if ( !signal?.aborted ) dispatch ( hideLoader () );
     }
   }
+
+   /* ───────────────────────── GET ATTACHMENT INFO ───────────────────── */
+  const getAttachmentInfo = useCallback (
+    async ( fileId ) =>
+    {
+      try
+      {
+        const response = await file.getFullFileInfo ( fileId );
+
+        if ( !response.status )
+        {
+          showErrorMessage ( dispatch, response.message );
+          return null;
+        }
+
+        return response.data;
+      }
+
+      catch ( error )
+      {
+        showErrorMessage (
+          dispatch,
+          errorMessages[ error.type?.toUpperCase () ]
+            || error.message
+            || errorMessages.DEFAULT
+        );
+        return null;
+      }
+    },
+    [ dispatch ],
+  );
 
   /* ───────────────────────── MARK AS READ ───────────────────── */
   async function markRead ( id, folder )
@@ -304,5 +339,5 @@ export function useEmails ()
     }
   }
 
-  return { sendMail, fetchEmails, markRead, moveToTrash, restoreFromTrash, deleteFromTrash };
+  return { sendMail, fetchEmails, getAttachmentInfo, markRead, moveToTrash, restoreFromTrash, deleteFromTrash };
 }

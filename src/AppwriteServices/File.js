@@ -4,7 +4,7 @@ import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
 
 
 // ─────────────────────  ENVIRONMENT VARIABLES  ─────────────────────
-const { appwriteEndpointUrl, appwriteProjectId, appwriteStorageId } = environmentVariables;
+const { appwriteEndpointUrl, appwriteProjectId, appwriteStorageId, } = environmentVariables;
 
 
 // ─────────────────────  MAPPING ERROR CORRECTLY  ─────────────────────
@@ -14,21 +14,23 @@ function mapError ( errorType, fallbackKey )
 
   const key = errorType.toUpperCase();
 
-  return errorMessages[ key ] || errorMessages[ fallbackKey ] || errorMessages.DEFAULT;
+  return (
+    errorMessages[ key ] || errorMessages[ fallbackKey ] || errorMessages.DEFAULT
+  );
 }
 
 
 // ───────────────────── FILE ─────────────────────
 class File
 {
-  client = new Client ();
+  client  = new Client ();
   storage;
 
   constructor ()
   {
     this.client
       .setEndpoint ( appwriteEndpointUrl )
-      .setProject ( appwriteProjectId );
+      .setProject  ( appwriteProjectId );
 
     this.storage = new Storage ( this.client );
   }
@@ -39,12 +41,22 @@ class File
   {
     try
     {
+      /* ---------- Guard ---------- */
+      if ( !files || files.length === 0 )
+      {
+        return {
+          status : false,
+          message: errorMessages.EMPTY_FILES,
+        };
+      }
+
       /* --------------- Upload file(s) --------------- */
 
       /* 1. convert FileList → array & upload in parallel */
-      const fileArray = Array.from ( files );
+      const fileArray   = Array.from ( files );
       const uploadTasks = fileArray.map (
-        ( file ) => this.storage.createFile ( appwriteStorageId, ID.unique (), file )
+        ( file ) =>
+          this.storage.createFile ( appwriteStorageId, ID.unique (), file )
       );
 
       /* 2. resolves to array of file objects */
@@ -52,10 +64,9 @@ class File
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
+        status : true,
         message: successMessages.FILE_UPLOADED,
-        data: uploaded,
+        data   : uploaded,
       };
     }
 
@@ -63,27 +74,37 @@ class File
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "FILE_UPLOAD_FAILED" ),
       };
     }
   }
 
-  /* ─────────── GET DOWNLOAD URL ─────────── */
-  async getDownloadURL ( fileId )
+  /* ─────────── GET ATTACHMENTS META DATA & URL ─────────── */
+  async getFullFileInfo ( fileId )
   {
     try
     {
-      /* --------------- Get download url --------------- */
-      const url = this.storage.getFileDownload ( appwriteStorageId, fileId );
+      /* --------------- Get file meta data & url --------------- */
+      const [ fileMeta, downloadUrl ] = await Promise.all (
+        [
+          this.storage.getFile        ( appwriteStorageId, fileId ),
+          this.storage.getFileDownload( appwriteStorageId, fileId ),
+        ]
+      );
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message, data } = response;
-        status: true,
-        message: successMessages.FILE_URL_GENERATED,
-        data: url,
+        status : true,
+        message: successMessages.FILE_META_FETCHED,
+        data   : {
+          $id         : fileMeta.$id,
+          name        : fileMeta.name,
+          size        : fileMeta.sizeOriginal,
+          type        : fileMeta.mimeType,
+          downloadUrl,
+          url         : downloadUrl,
+        },
       };
     }
 
@@ -91,9 +112,8 @@ class File
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
-        message: mapError ( error.type, "FILE_URL_FAILED" ),
+        status : false,
+        message: mapError ( error.type, "FILE_META_FAILED" ),
       };
     }
   }
@@ -108,8 +128,7 @@ class File
 
       /* --------------- Success --------------- */
       return {
-        // const { status, message } = response;
-        status: true,
+        status : true,
         message: successMessages.FILE_DELETED,
       };
     }
@@ -118,8 +137,7 @@ class File
     catch ( error )
     {
       return {
-        // const { status, message } = response;
-        status: false,
+        status : false,
         message: mapError ( error.type, "FILE_DELETION_FAILED" ),
       };
     }
