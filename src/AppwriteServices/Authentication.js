@@ -187,15 +187,6 @@ class Authentication
   {
     try
     {
-      /* ---------- Guard ---------- */
-      if ( !sessionId )
-      {
-        return {
-          status : false,
-          message: errorMessages.UPDATE_SESSION_FALLBACK,
-        };
-      }
-
       /* --------------- Update user session --------------- */
       const newSessionResponse = await this.account.updateSession (
         sessionId
@@ -203,9 +194,9 @@ class Authentication
 
       /* --------------- Success --------------- */
       return {
-        status : true,
+        status: true,
         message: successMessages.TOKEN_REFRESHED,
-        data : newSessionResponse,   // { $id, userId, expire, ... }
+        data: newSessionResponse,   // { $id, userId, expire, ... }
       };
     }
 
@@ -213,7 +204,7 @@ class Authentication
     catch ( error )
     {
       return {
-        status : false,
+        status: false,
         message: mapError ( error.type, "UPDATE_SESSION_FALLBACK" ),
       };
     }

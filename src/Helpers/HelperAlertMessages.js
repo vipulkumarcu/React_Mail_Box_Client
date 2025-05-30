@@ -12,7 +12,7 @@ export const errorMessages = {
   USER_SESSION_NOT_FOUND:        "Session not found. Please log in again.",
   UPDATE_SESSION_FALLBACK:       "Failed to update session. Please log in again.",
   JWT_INVALID:                   "Session expired. Please log in again.",
-  JWT_EXPIRED:                   "Session expired. Please log in again.",
+  SESSION_EXPIRED:               "Session expired. Please log in again.",
   GENERAL_RATE_LIMIT_EXCEEDED:   "Too many attempts. Please try again later.",
   GENERAL_UNAUTHORIZED:          "You must be logged in to access this resource.",
   GENERAL_FORBIDDEN:             "You do not have permission to perform this action.",

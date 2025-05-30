@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { hideLoader, showLoader } from "../Features/LoaderSlice";
 import { showErrorMessage, showInfoMessage, showSuccessMessage } from "../Helpers/HelperAlertFunctions";
 import { errorMessages, successMessages } from "../Helpers/HelperAlertMessages";
-import { clearUser, setUser } from "../Features/UserSlice";
+import { clearUser, refreshSession, setUser } from "../Features/UserSlice";
 import authentication from "../AppwriteServices/Authentication";
 import { resetMailState } from "../Features/MailSlice";
+import { useCallback } from "react";
 
 export function useAuthenticate ()
 {
@@ -185,13 +186,58 @@ export function useAuthenticate ()
     }
   }
 
-  async function logout ()
-  {
-    await authentication.logout ();
-    dispatch ( clearUser () );
-    navigate ( "/" );
-    showSuccessMessage ( dispatch, successMessages.LOGOUT_SUCCESS );
-  };
+  const logout = useCallback (
+    async () => {
+      await authentication.logout ();
+      dispatch ( clearUser () );
+      navigate ( "/" );
+      showSuccessMessage ( dispatch, successMessages.LOGOUT_SUCCESS );
+    }, [ dispatch, navigate ]
+  );
 
-  return { signup, login, logout };
+
+  const refreshSessionId = useCallback (
+    async ( sessionId, expiresIn, timeLeft, threshold ) => {
+      if ( !sessionId || !expiresIn )
+      {
+        return;
+      }
+
+      else if ( timeLeft > threshold )              // Session is not close to expiring, do nothing
+      {
+        return;
+      }
+
+      try
+      {
+        const { status, data } = await authentication.updateUserSession ( sessionId );
+
+        if ( status )
+        {
+          dispatch ( refreshSession ( data.expire ) );
+        }
+
+        else
+        {
+          dispatch ( clearUser () );
+          navigate ( "/" );
+        }
+      }
+
+      catch ( error )
+      {
+        showErrorMessage (
+          dispatch,
+          errorMessages[ error.type?.toUpperCase () ]
+            || error.message
+            || errorMessages.DEFAULT
+        );
+        dispatch ( clearUser () );
+        navigate ( "/" );
+      }
+    }, [ dispatch, navigate ]
+  );
+
+
+  return { signup, login, logout, refreshSessionId };
 }
