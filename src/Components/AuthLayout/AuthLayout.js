@@ -1,18 +1,20 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { showLoader, hideLoader } from "../../Features/LoaderSlice"
+import { showLoader, hideLoader } from "../../Features/LoaderSlice";
 
 
 /* ──────────────────────────── UTILITY ──────────────────────────── */
 function isAuthenticated ()
 {
   const sessionId = localStorage.getItem ( "sessionId" );
-  const expiresIn = Number ( localStorage.getItem ( "expiresIn" ) );
+  const expiresIn = localStorage.getItem ( "expiresIn" );
 
-  if ( !sessionId ) return false;
+  /* ---- No session or expiry stored ---- */
+  if ( !sessionId || !expiresIn ) return false;
 
-  if ( expiresIn && Date.now () > expiresIn ) return false;
+  /* ---- Convert ISO string to ms & compare ---- */
+  if ( Date.now () >= Date.parse ( expiresIn ) ) return false;
 
   return true;
 }
@@ -22,11 +24,11 @@ function isAuthenticated ()
 function AuthLayout ( { children, authentication } )
 {
   /* ---------- HOOKS ---------- */
-  const navigate = useNavigate ();
-  const dispatch = useDispatch ();
+  const navigate  = useNavigate ();
+  const dispatch  = useDispatch ();
   const location  = useLocation ();
 
-  const loggedIn = isAuthenticated();
+  const loggedIn  = isAuthenticated ();
 
   /* ────────────────── USEEFFECT ────────────────── */
   useEffect (
@@ -38,26 +40,25 @@ function AuthLayout ( { children, authentication } )
       {
         if ( location.pathname !== "/" )
         {
-          navigate ( "/", { replace: true } );              // Replace history entry
+          navigate ( "/", { replace: true } );
         }
-        dispatch ( hideLoader () );
-        return;
       }
 
       /* ─── GUEST-ONLY ROUTE: user must be logged-out ─── */
-      if ( !authentication && loggedIn )
+      else if ( !authentication && loggedIn )
       {
-        if (location.pathname !== "/landing-page")
+        if ( location.pathname !== "/landing-page" )
         {
           navigate ( "/landing-page", { replace: true } );
         }
-        dispatch ( hideLoader () );
-        return;
       }
 
-      return () => dispatch ( hideLoader () );
+      dispatch ( hideLoader () );
 
-    },[ authentication, loggedIn, location.pathname, navigate, dispatch ]
+      /* ---------- CLEANUP ---------- */
+      return () => dispatch ( hideLoader () );
+    },
+    [ authentication, loggedIn, location.pathname, navigate, dispatch ]
   );
 
   /* ────────────────── JSX ────────────────── */
